@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ---------------- 后端 CI 任务 ----------------
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          
+      - name: Install Dependencies
+        run: pip install -r backend/requirements.txt pytest coverage ruff
+        
+      - name: Run Ruff Lint
+        run: ruff check backend/
+        
+      - name: Run Pytest & Coverage
+        # CI环境下如果没有真实DB，需要在代码或此处使用 sqlite:///:memory: 环境变量替代
+        run: coverage run -m pytest backend/tests && coverage xml
+        
+      - name: Upload Backend Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: backend
+
+  # ---------------- 前端 CI 任务 ----------------
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install Dependencies
+        run: npm ci --prefix frontend
+        
+      - name: Run ESLint
+        run: npm run lint --prefix frontend
+        
+      - name: Run Tests & Coverage
+        # 注入测试环境变量，防止CI因为缺失环境报错
+        env:
+          VITE_API_URL: http://localhost:3000
+        run: npm test --prefix frontend
+        
+      - name: Upload Frontend Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: frontend/coverage/lcov.info # 确保这是你前端生成覆盖率的实际路径
+          flags: frontend
