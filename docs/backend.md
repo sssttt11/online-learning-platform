@@ -18,17 +18,29 @@
 ## 三、项目结构
 backend/
 ├── src/
+
 │ ├── main/
+
 │ │ ├── java/
+
 │ │ │ ├── controller/ # 接口控制层
+
 │ │ │ ├── service/ # 业务逻辑层
+
 │ │ │ ├── mapper/ # 数据访问层
+
 │ │ │ ├── entity/ # 实体类
+
 │ │ │ └── config/ # 配置类
+
 │ │ └── resources/
+
 │ │ ├── mapper/ # MyBatis 映射文件
+
 │ │ └── application.yml # 项目配置文件
+
 │ └── test/ # 单元测试
+
 └── pom.xml # Maven 依赖配置
 
 
