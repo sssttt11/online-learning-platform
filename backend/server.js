@@ -294,7 +294,7 @@ app.get('/api/posts', async (req, res) => {
     }
 
     try {
-        // 使用子查询获取评论数，以及当前用户是否点赞过该帖子
+        // 使用子查询获取评论数，以及当前 user_id 点赞状态
         const query = `
             SELECT p.id, p.title, p.content, p.created_at, p.likes_count, u.username, u.grade,
                    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
@@ -751,5 +751,23 @@ app.get('/api/users/:id/all-notes', async (req, res) => {
         res.json({ success: true, data: rows });
     } catch (error) {
         res.status(500).json({ success: false, message: '获取笔记失败' });
+    }
+});
+
+/**
+ * 34. 获取平台注册用户总数 (GET /api/users/count)
+ * 用于管理后台系统数据指标动态统计
+ */
+app.get('/api/users/count', async (req, res) => {
+    try {
+        // 执行统计用户总数的 SQL 语句
+        const [rows] = await db.query('SELECT COUNT(*) AS total FROM users');
+        res.json({ 
+            success: true, 
+            count: rows[0].total 
+        });
+    } catch (error) {
+        console.error('查询注册用户总数失败:', error);
+        res.status(500).json({ success: false, message: '无法获取系统用户总数数据' });
     }
 });
