@@ -38,7 +38,7 @@
             <el-col :span="8">
               <el-card shadow="never" class="stat-card">
                 <div class="stat-title">平台总用户数</div>
-                <div class="stat-value">1,284 <span class="unit">人</span></div>
+                <div class="stat-value">{{ totalUsersCount }} <span class="unit">人</span></div>
               </el-card>
             </el-col>
             <el-col :span="8">
@@ -201,9 +201,23 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import * as echarts from 'echarts'
+import { Plus } from '@element-plus/icons-vue' // 引入加号图标
 
 const router = useRouter()
 const activeTab = ref('dashboard') 
+
+// 🌟 新增：用户总数相关变量和函数
+const totalUsersCount = ref(0)
+const fetchTotalUsers = async () => {
+  try {
+    const res = await axios.get('http://localhost:3000/api/users/count')
+    if (res.data.success) {
+      totalUsersCount.value = res.data.count
+    }
+  } catch (error) {
+    console.error('获取平台总用户数失败', error)
+  }
+}
 
 // 课程模块变量
 const courseList = ref([])
@@ -211,7 +225,7 @@ const loading = ref(false)
 const dialogVisible = ref(false)
 const submitting = ref(false)
 const isEditMode = ref(false) 
-// 🌟 结构变化：移除了 teacher_id，全面改用文本形式的 teacher_name
+// 结构变化：移除了 teacher_id，全面改用文本形式的 teacher_name
 const courseForm = ref({ title: '', category: '', cover_image: '', video_url: '', description: '', teacher_name: '' })
 
 // 章节管理变量
@@ -264,7 +278,6 @@ const saveCourse = async () => {
     dialogVisible.value = false; fetchCourses()
   } catch (error) { ElMessage.error('操作失败') } finally { submitting.value = false }
 }
-import { Plus } from '@element-plus/icons-vue' // 引入加号图标
 
 // ================== 图片上传控制逻辑 ==================
 // 上传前校验（拦截不合格的文件）
@@ -281,7 +294,7 @@ const beforeUpload = (file) => {
   return isImage && isLt2M
 }
 
-// 🌟 图片上传成功后，将后端返回的真实链接塞进表单的 cover_image 字段
+// 图片上传成功后，将后端返回的真实链接塞进表单的 cover_image 字段
 const handleUploadSuccess = (res, file) => {
   if (res.success) {
     courseForm.value.cover_image = res.url // 将后端生成的地址赋给表单
@@ -353,7 +366,11 @@ const initCharts = () => {
   window.addEventListener('resize', () => { pieChart.resize(); lineChart.resize() })
 }
 
-onMounted(() => { fetchCourses() })
+// 🌟 修改了这里：在组件挂载时拉取真实用户数
+onMounted(() => { 
+  fetchCourses()
+  fetchTotalUsers() 
+})
 </script>
 
 <style scoped>
