@@ -74,105 +74,105 @@ class UserCourseController {
   }
 
   // 获取课程详情（包含用户学习进度）
-    static async getCourseWithProgress(req, res) {
+  static async getCourseWithProgress(req, res) {
     try {
-        const userId = req.user.userId;
-        const { courseId } = req.params;
+      const userId = req.user.userId;
+      const { courseId } = req.params;
 
-        // 获取课程详情
-        const course = await Course.getById(courseId);
-        if (!course) {
+      // 获取课程详情
+      const course = await Course.getById(courseId);
+      if (!course) {
         return res.status(404).json({
-            success: false,
-            message: '课程不存在'
+          success: false,
+          message: '课程不存在'
         });
-        }
+      }
 
-        // 获取用户学习进度
-        const userCourse = await UserCourseModel.getUserCourse(userId, courseId);
+      // 获取用户学习进度
+      const userCourse = await UserCourseModel.getUserCourse(userId, courseId);
         
-        // 获取章节和视频信息
-        // const chapters = await Course.getChapters(courseId); // 暂时注释，避免循环依赖
+      // 获取章节和视频信息
+      // const chapters = await Course.getChapters(courseId); // 暂时注释，避免循环依赖
 
-        // 如果是用户已报名的课程，记录访问行为
-        if (userCourse) {
+      // 如果是用户已报名的课程，记录访问行为
+      if (userCourse) {
         await UserCourseModel.updateProgress(userId, courseId, {
-            lastChapterId: null,
-            lastVideoId: null
+          lastChapterId: null,
+          lastVideoId: null
         });
-        }
+      }
 
-        res.json({
+      res.json({
         success: true,
         data: {
-            course,
-            user_course: userCourse || null,
-            // chapters // 暂时注释
+          course,
+          user_course: userCourse || null,
+          // chapters // 暂时注释
         }
-        });
+      });
     } catch (error) {
-        console.error('获取课程详情失败:', error);
-        res.status(500).json({ 
+      console.error('获取课程详情失败:', error);
+      res.status(500).json({ 
         success: false, 
         message: '服务器内部错误',
         error: error.message 
-        });
+      });
     }
-    }
+  }
 
-    // 修改 updateProgress 方法，处理课程关系不存在的情况：
-    static async updateProgress(req, res) {
+  // 修改 updateProgress 方法，处理课程关系不存在的情况：
+  static async updateProgress(req, res) {
     try {
-        const userId = req.user.userId;
-        const { courseId } = req.params;
-        const {
+      const userId = req.user.userId;
+      const { courseId } = req.params;
+      const {
         progress,
         lastChapterId,
         lastVideoId,
         learnDuration
-        } = req.body;
+      } = req.body;
 
-        // 验证进度值
-        if (progress !== undefined && (progress < 0 || progress > 100)) {
+      // 验证进度值
+      if (progress !== undefined && (progress < 0 || progress > 100)) {
         return res.status(400).json({ 
-            success: false, 
-            message: '进度值必须在0-100之间' 
+          success: false, 
+          message: '进度值必须在0-100之间' 
         });
-        }
+      }
 
-        // 先检查用户是否报名了课程
-        const userCourse = await UserCourseModel.getUserCourse(userId, courseId);
-        if (!userCourse) {
+      // 先检查用户是否报名了课程
+      const userCourse = await UserCourseModel.getUserCourse(userId, courseId);
+      if (!userCourse) {
         // 如果课程关系不存在，先自动报名
         await UserCourseModel.enrollCourse(userId, courseId);
-        }
+      }
 
-        const result = await UserCourseModel.updateProgress(userId, courseId, {
+      const result = await UserCourseModel.updateProgress(userId, courseId, {
         progress,
         lastChapterId,
         lastVideoId,
         learnDuration
-        });
+      });
 
-        if (!result) {
+      if (!result) {
         return res.status(404).json({ 
-            success: false, 
-            message: '更新失败' 
+          success: false, 
+          message: '更新失败' 
         });
-        }
+      }
 
-        res.json({ 
+      res.json({ 
         success: true, 
         message: '进度更新成功' 
-        });
+      });
     } catch (error) {
-        console.error('更新学习进度失败:', error);
-        res.status(500).json({ 
+      console.error('更新学习进度失败:', error);
+      res.status(500).json({ 
         success: false, 
         message: '服务器内部错误' 
-        });
+      });
     }
-    }
+  }
 
   // 切换收藏状态
   static async toggleFavorite(req, res) {

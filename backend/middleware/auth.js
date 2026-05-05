@@ -21,8 +21,8 @@ const authMiddleware = async (req, res, next) => {
     
     // 验证token
     // 为了与 token 生成端保持一致，默认 secret 也设置为 'mozhicourse-secret-key-2024'
-    const secret = process.env.JWT_SECRET || 'mozhicourse-secret-key-2024'
-    console.log('使用 JWT_SECRET:', process.env.JWT_SECRET ? 'env' : 'default')
+    const secret = process.env.JWT_SECRET || 'mozhicourse-secret-key-2024';
+    console.log('使用 JWT_SECRET:', process.env.JWT_SECRET ? 'env' : 'default');
     const decoded = jwt.verify(token, secret);
     console.log('✅ Token解码成功');
     console.log('Token payload:', decoded);

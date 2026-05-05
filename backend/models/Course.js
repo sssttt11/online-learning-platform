@@ -239,11 +239,11 @@ class Course {
     let courses = [];
     
     // 1. 优先推荐同分类的其他课程
-      const limitInt = Number.isFinite(Number(limit)) ? parseInt(limit, 10) : 4;
-      if (categoryId) {
-        console.log('🔎 getRelatedCourses (same category) params:', { categoryId, courseId, limit: limitInt });
-        const [sameCategoryCourses] = await pool.execute(
-          `SELECT 
+    const limitInt = Number.isFinite(Number(limit)) ? parseInt(limit, 10) : 4;
+    if (categoryId) {
+      console.log('🔎 getRelatedCourses (same category) params:', { categoryId, courseId, limit: limitInt });
+      const [sameCategoryCourses] = await pool.execute(
+        `SELECT 
             c.course_id,
             c.course_name,
             c.course_desc,
@@ -257,10 +257,10 @@ class Course {
            WHERE c.category_id = ? AND c.course_id != ? AND c.is_online = 1
            ORDER BY c.rating DESC, c.student_count DESC
            LIMIT ${limitInt}`,
-          [categoryId, courseId]
-        );
-        courses = sameCategoryCourses;
-      }
+        [categoryId, courseId]
+      );
+      courses = sameCategoryCourses;
+    }
     
     // 2. 如果同分类课程不够，补充热门课程
     if (courses.length < limit) {

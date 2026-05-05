@@ -29,7 +29,7 @@ const getUserProfile = async (req, res) => {
     console.log('🎯 最终确定的用户角色:', finalRole);
     console.log('🎯 角色来源:', 
       user.role ? '数据库' : 
-      req.user.role ? 'JWT Token' : '默认值(learner)'
+        req.user.role ? 'JWT Token' : '默认值(learner)'
     );
 
     // 从 user_detail 读取个性签名等扩展信息

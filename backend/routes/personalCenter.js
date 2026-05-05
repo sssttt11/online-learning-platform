@@ -175,7 +175,7 @@ router.post('/favorites/:courseId/toggle', authMiddleware, async (req, res) => {
     
     // 检查课程是否存在
     const [courseRows] = await pool.execute(
-      `SELECT course_id FROM course WHERE course_id = ?`,
+      'SELECT course_id FROM course WHERE course_id = ?',
       [courseId]
     );
     
@@ -188,7 +188,7 @@ router.post('/favorites/:courseId/toggle', authMiddleware, async (req, res) => {
     
     // 检查是否已有 user_course 记录
     const [userCourseRows] = await pool.execute(
-      `SELECT * FROM user_course WHERE user_id = ? AND course_id = ?`,
+      'SELECT * FROM user_course WHERE user_id = ? AND course_id = ?',
       [userId, courseId]
     );
     
@@ -252,7 +252,7 @@ router.get('/favorites/:courseId/status', authMiddleware, async (req, res) => {
     const { pool } = require('../config/database');
     
     const [rows] = await pool.execute(
-      `SELECT is_favorite FROM user_course WHERE user_id = ? AND course_id = ?`,
+      'SELECT is_favorite FROM user_course WHERE user_id = ? AND course_id = ?',
       [userId, courseId]
     );
     
@@ -298,7 +298,7 @@ router.post('/library/:courseId/enroll', authMiddleware, async (req, res) => {
     
     // 检查课程是否存在
     const [courseRows] = await pool.execute(
-      `SELECT course_id FROM course WHERE course_id = ?`,
+      'SELECT course_id FROM course WHERE course_id = ?',
       [courseId]
     );
     
@@ -311,7 +311,7 @@ router.post('/library/:courseId/enroll', authMiddleware, async (req, res) => {
 
     // 检查是否已有记录
     const [userCourseRows] = await pool.execute(
-      `SELECT * FROM user_course WHERE user_id = ? AND course_id = ?`,
+      'SELECT * FROM user_course WHERE user_id = ? AND course_id = ?',
       [userId, courseId]
     );
     
@@ -377,7 +377,7 @@ router.post('/library/:courseId/unenroll', authMiddleware, async (req, res) => {
     
     // 检查课程是否存在
     const [courseRows] = await pool.execute(
-      `SELECT course_id FROM course WHERE course_id = ?`,
+      'SELECT course_id FROM course WHERE course_id = ?',
       [courseId]
     );
     
@@ -390,7 +390,7 @@ router.post('/library/:courseId/unenroll', authMiddleware, async (req, res) => {
 
     // 检查是否已有记录
     const [userCourseRows] = await pool.execute(
-      `SELECT * FROM user_course WHERE user_id = ? AND course_id = ?`,
+      'SELECT * FROM user_course WHERE user_id = ? AND course_id = ?',
       [userId, courseId]
     );
     
@@ -446,7 +446,7 @@ router.get('/library/:courseId/status', authMiddleware, async (req, res) => {
     const { pool } = require('../config/database');
     
     const [rows] = await pool.execute(
-      `SELECT is_enrolled, is_favorite FROM user_course WHERE user_id = ? AND course_id = ?`,
+      'SELECT is_enrolled, is_favorite FROM user_course WHERE user_id = ? AND course_id = ?',
       [userId, courseId]
     );
     
@@ -483,7 +483,7 @@ router.get('/favorites/:courseId/status', authMiddleware, async (req, res) => {
     const { pool } = require('../config/database');
     
     const [rows] = await pool.execute(
-      `SELECT is_favorite FROM user_course WHERE user_id = ? AND course_id = ?`,
+      'SELECT is_favorite FROM user_course WHERE user_id = ? AND course_id = ?',
       [userId, courseId]
     );
     
@@ -518,7 +518,7 @@ router.post('/library/:courseId/toggle', authMiddleware, async (req, res) => {
     const { pool } = require('../config/database');
     
     const [courseRows] = await pool.execute(
-      `SELECT course_id FROM course WHERE course_id = ?`,
+      'SELECT course_id FROM course WHERE course_id = ?',
       [courseId]
     );
     
@@ -531,7 +531,7 @@ router.post('/library/:courseId/toggle', authMiddleware, async (req, res) => {
 
     // 检查用户是否已有记录
     const [userCourseRows] = await pool.execute(
-      `SELECT * FROM user_course WHERE user_id = ? AND course_id = ?`,
+      'SELECT * FROM user_course WHERE user_id = ? AND course_id = ?',
       [userId, courseId]
     );
     

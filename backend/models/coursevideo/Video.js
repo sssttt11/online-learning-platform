@@ -60,7 +60,7 @@ class Video {
       );
       
       if (progress.length === 0) {
-        console.log(`📊 未找到进度记录，返回默认进度`);
+        console.log('📊 未找到进度记录，返回默认进度');
         return { progress: 0, currentTime: 0 };
       }
       
@@ -75,7 +75,7 @@ class Video {
   // 更新学习进度
   static async updateProgress(userId, videoId, progress, currentTime, duration = 0) {
     try {
-      console.log(`🔄 更新学习进度:`, {
+      console.log('🔄 更新学习进度:', {
         userId, videoId, progress, currentTime, duration
       });
       
@@ -97,7 +97,7 @@ class Video {
         [userId, courseId, videoId, duration * (progress / 100), progress, currentTime]
       );
       
-      console.log(`✅ 进度更新成功`);
+      console.log('✅ 进度更新成功');
     } catch (error) {
       console.error('更新学习进度失败:', error);
       throw error;
@@ -115,7 +115,7 @@ class Video {
       courseId = null
     } = behaviorData;
     
-    console.log(`📝 记录学习行为:`, {
+    console.log('📝 记录学习行为:', {
       userId, videoId, behaviorType, currentTime, playSpeed, courseId
     });
     
@@ -182,7 +182,7 @@ class Video {
             [userId, actualCourseId, videoId, learnDuration, progress, currentTime]
           );
           
-          console.log(`✅ 学习数据已更新到learning_detail表`);
+          console.log('✅ 学习数据已更新到learning_detail表');
         } catch (detailError) {
           console.log('⚠️ 更新learning_detail表失败:', detailError.message);
         }
@@ -238,7 +238,7 @@ class Video {
       throw new Error('行为数据不能为空');
     }
     
-    console.log(`📝 批量记录学习行为:`, {
+    console.log('📝 批量记录学习行为:', {
       userId, videoId, count: behaviors.length
     });
     
@@ -262,7 +262,7 @@ class Video {
           courseId
         });
       } catch (error) {
-        console.error(`记录单个行为失败:`, error);
+        console.error('记录单个行为失败:', error);
         // 继续处理其他行为
       }
     }

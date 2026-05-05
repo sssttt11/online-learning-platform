@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const aiRoutes   = require('./routes/ai');   // ai
+const aiRoutes   = require('./routes/ai');   // ✅ 引入 AI 路由
 
 const app = express();
 

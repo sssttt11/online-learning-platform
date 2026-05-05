@@ -132,41 +132,41 @@ class AchievementModel {
 
       // 根据成就类型检查条件
       switch (achievement.achievement_type) {
-        case 'course':
-          if (stats.enrolled_courses_count >= achievement.required_value) {
+      case 'course':
+        if (stats.enrolled_courses_count >= achievement.required_value) {
+          shouldGrant = true;
+        }
+        break;
+
+      case 'duration':
+        if (stats.total_learning_duration >= achievement.required_value) {
+          shouldGrant = true;
+        }
+        break;
+
+      case 'learning':
+        if (achievement.name === '视频达人') {
+          if (stats.learned_videos_count >= achievement.required_value) {
             shouldGrant = true;
           }
-          break;
-
-        case 'duration':
-          if (stats.total_learning_duration >= achievement.required_value) {
+        } else if (achievement.name === '全勤奖') {
+          if (stats.continuous_days >= achievement.required_value) {
             shouldGrant = true;
           }
-          break;
+        }
+        break;
 
-        case 'learning':
-          if (achievement.name === '视频达人') {
-            if (stats.learned_videos_count >= achievement.required_value) {
-              shouldGrant = true;
-            }
-          } else if (achievement.name === '全勤奖') {
-            if (stats.continuous_days >= achievement.required_value) {
-              shouldGrant = true;
-            }
+      case 'social':
+        if (achievement.name === '评价专家') {
+          if (stats.reviews_count >= achievement.required_value) {
+            shouldGrant = true;
           }
-          break;
-
-        case 'social':
-          if (achievement.name === '评价专家') {
-            if (stats.reviews_count >= achievement.required_value) {
-              shouldGrant = true;
-            }
-          } else if (achievement.name === '社区活跃者') {
-            if (stats.comments_count >= achievement.required_value) {
-              shouldGrant = true;
-            }
+        } else if (achievement.name === '社区活跃者') {
+          if (stats.comments_count >= achievement.required_value) {
+            shouldGrant = true;
           }
-          break;
+        }
+        break;
       }
 
       if (shouldGrant) {

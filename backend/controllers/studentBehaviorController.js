@@ -161,7 +161,7 @@ exports.getBehaviorOverview = async (req, res) => {
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
-}
+};
 
 // 获取用户已报名课程列表 - 确保包含三个关键指标
 exports.getEnrolledCourses = async (req, res) => {
@@ -323,11 +323,11 @@ exports.getCourseAnalysis = async (req, res) => {
     
     // 计算每个章节的进度率
     chapterProgress.forEach(chapter => {
-        chapter.progress_rate = chapter.total_videos > 0 
-            ? Math.round((chapter.completed_videos / chapter.total_videos) * 100) 
-            : 0;
-        chapter.chapter_progress_rate = chapter.progress_rate;
-        chapter.chapter_mastery = chapter.progress_rate;
+      chapter.progress_rate = chapter.total_videos > 0 
+        ? Math.round((chapter.completed_videos / chapter.total_videos) * 100) 
+        : 0;
+      chapter.chapter_progress_rate = chapter.progress_rate;
+      chapter.chapter_mastery = chapter.progress_rate;
     });
     
     // 3. 获取专注度数据（保持不变）

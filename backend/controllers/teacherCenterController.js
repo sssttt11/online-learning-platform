@@ -486,7 +486,7 @@ const getLearningTrendData = async (req, res) => {
     // 使用 LearningTrendModel 获取数据
     const trendData = await LearningTrendModel.getTrendDataByType(teacherId, analysisType);
 
-    console.log(`📊 数据库返回数据条数:`, trendData ? trendData.length : 0);
+    console.log('📊 数据库返回数据条数:', trendData ? trendData.length : 0);
     
     const formattedData = {
       weeks: [],
@@ -504,7 +504,7 @@ const getLearningTrendData = async (req, res) => {
         formattedData.mastery.push(item.mastery_rate);
         formattedData.focusDuration.push(item.focus_duration);
       });
-      console.log(`📊 格式化后的数据:`, formattedData);
+      console.log('📊 格式化后的数据:', formattedData);
     } else {
       console.warn(`⚠️ 没有找到类型为 ${analysisType} 的趋势数据`);
     }
@@ -534,8 +534,8 @@ const getTrendOverview = async (req, res) => {
     const overviewData = await LearningTrendModel.getTrendOverview(teacherId);
     const latestStats = await LearningTrendModel.getLatestStats(teacherId);
     
-    console.log(`📈 概览数据:`, overviewData ? overviewData.length : 0, '条记录');
-    console.log(`📈 最新统计:`, latestStats ? latestStats.length : 0, '条记录');
+    console.log('📈 概览数据:', overviewData ? overviewData.length : 0, '条记录');
+    console.log('📈 最新统计:', latestStats ? latestStats.length : 0, '条记录');
 
     // 创建不同类型的数据映射
     const statsByType = {};

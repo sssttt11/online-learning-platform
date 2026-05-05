@@ -182,7 +182,7 @@ class CourseController {
         return res.status(404).json(notFoundResponse('课程不存在'));
       }
       
-      console.log(`📚 当前课程信息:`, { 
+      console.log('📚 当前课程信息:', { 
         courseId, 
         categoryId: course.category_id, 
         courseName: course.course_name 

@@ -48,7 +48,7 @@ class VideoController {
       const { videoId, currentTime, progress, duration = 0 } = req.body;
       const userId = req.user.userId;
       
-      console.log(`🔄 更新学习进度:`, {
+      console.log('🔄 更新学习进度:', {
         userId, videoId, currentTime, progress, duration
       });
       
@@ -80,7 +80,7 @@ class VideoController {
       
       const userId = req.user.userId;
       
-      console.log(`📝 记录学习行为:`, {
+      console.log('📝 记录学习行为:', {
         userId, videoId, courseId, behaviorType, 
         currentTime, playSpeed, duration, progress
       });
@@ -146,7 +146,7 @@ class VideoController {
       const { videoId, behaviors = [] } = req.body;
       const userId = req.user.userId;
       
-      console.log(`📝 批量记录学习行为:`, {
+      console.log('📝 批量记录学习行为:', {
         userId, videoId, behaviorCount: behaviors.length
       });
       

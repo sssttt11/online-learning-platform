@@ -1,4 +1,4 @@
-// controllers
+// controllers/aiController.js - 修复版
 const https = require('https');
 
 exports.chat = async (req, res) => {

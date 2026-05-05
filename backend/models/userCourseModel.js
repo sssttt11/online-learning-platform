@@ -5,7 +5,7 @@ class UserCourseModel {
   // 获取用户课程关系
   static async getUserCourse(userId, courseId) {
     const [rows] = await pool.execute(
-      `SELECT * FROM user_course WHERE user_id = ? AND course_id = ?`,
+      'SELECT * FROM user_course WHERE user_id = ? AND course_id = ?',
       [userId, courseId]
     );
     return rows[0];
@@ -19,13 +19,13 @@ class UserCourseModel {
     }
 
     const [result] = await pool.execute(
-      `INSERT INTO user_course (user_id, course_id, enroll_time) VALUES (?, ?, NOW())`,
+      'INSERT INTO user_course (user_id, course_id, enroll_time) VALUES (?, ?, NOW())',
       [userId, courseId]
     );
 
     // 更新课程学生人数
     await pool.execute(
-      `UPDATE course SET student_count = student_count + 1 WHERE course_id = ?`,
+      'UPDATE course SET student_count = student_count + 1 WHERE course_id = ?',
       [courseId]
     );
 
@@ -192,14 +192,14 @@ class UserCourseModel {
   // 删除用户课程（取消报名）
   static async deleteUserCourse(userId, courseId) {
     const [result] = await pool.execute(
-      `DELETE FROM user_course WHERE user_id = ? AND course_id = ?`,
+      'DELETE FROM user_course WHERE user_id = ? AND course_id = ?',
       [userId, courseId]
     );
 
     if (result.affectedRows > 0) {
       // 更新课程学生人数
       await pool.execute(
-        `UPDATE course SET student_count = GREATEST(student_count - 1, 0) WHERE course_id = ?`,
+        'UPDATE course SET student_count = GREATEST(student_count - 1, 0) WHERE course_id = ?',
         [courseId]
       );
     }
