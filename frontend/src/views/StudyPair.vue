@@ -636,7 +636,8 @@ import {
   getTeamTaskCompletionData,
   updateTaskCompletionStatus, // 改为新的方法
   quickCompleteTask, // 新增方法
-  getTeamTasksStatistics // 新增方法，用于获取任务统计数据
+  updateTaskCompletionTime,  // <-- 加上这个
+  updateTeamTaskStatus       // <-- 加上这个
 } from '@/api/community'
 import { useUserStore } from '@/stores/user'
 

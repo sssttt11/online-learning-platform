@@ -59,7 +59,7 @@
           <div class="learning-list card-like">
             <h4>我的课程</h4>
             <ul :style="{ gap: enrolledGap + 'px' }">
-              <li v-for="(c, idx) in enrolled.slice(0,3)" :key="c.course_id">
+              <li v-for="(c) in enrolled.slice(0,3)" :key="c.course_id">
                 <a href="#" @click.prevent="goCourse(c.course_id)">{{ c.course_name }}</a>
               </li>
               <li v-if="enrolled.length === 0">暂无课程</li>

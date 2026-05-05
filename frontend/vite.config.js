@@ -10,7 +10,11 @@ export default defineConfig({
     }
   },
   test: {
-    environment: 'happy-dom', // 👈 关键：把 jsdom 改成 happy-dom
-    globals: true
+    environment: 'happy-dom', // 保持不变，用于模拟DOM
+    globals: true,
+    coverage: {
+      reporter: ['text', 'lcov'], // 👈 新增：必须包含 lcov 才能生成 lcov.info 给 Codecov
+      reportsDirectory: './coverage'
+    }
   }
 })

@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import axios from 'axios'
 
 // 课程相关API
 export const getCourseDetail = (courseId) => {
