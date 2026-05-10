@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # 1. 数据库容器
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword  # 设置数据库 root 密码 (需与后端配置一致)
+      MYSQL_DATABASE: online_learning    # 启动时自动创建的数据库名
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql # 数据持久化，防止重启丢失数据
+      # 如果你有数据库初始化脚本(比如建表)，可以解除下面这行的注释
+      # - ./backend/init_perfect.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # 2. 后端容器
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db                 # 这里填的是上面的服务名 'db'
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword   # 需与上面数据库密码一致
+      - DB_NAME=online_learning
+    volumes:
+      - backend_uploads:/app/uploads # 🌟 关键：持久化用户上传的封面图片，防止重启丢失
+    depends_on:
+      - db
+
+  # 3. 前端容器
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - "80:80" # 将前端映射到电脑的 80 端口
+    depends_on:
+      - backend
+
+# 定义具名数据卷
+volumes:
+  db_data:
+  backend_uploads:
