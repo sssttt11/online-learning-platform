@@ -1,0 +1,44 @@
+/* frontend/src/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap');
+
+:root {
+  --primary-green: #6ab085;       /* 栖学主绿 */
+  --deep-green: #3d5a49;          /* 深墨绿 (标题/强调) */
+  --light-mint: #eef7f2;          /* 背景浅薄荷绿 */
+  --paper-cream: #fdfaf5;         /* 书卷米白 */
+  --text-main: #2c3e50;           /* 深灰文字 */
+  --shadow-soft: 0 12px 32px rgba(106, 176, 133, 0.12); /* 弥散阴影 */
+  --border-radius: 16px;
+}
+
+body {
+  margin: 0;
+  /* 基础字体使用无衬线，保证阅读体验 */
+  font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: var(--light-mint);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 特殊标题使用带书卷气的衬线体 */
+.serif-text {
+  font-family: 'Noto Serif SC', serif;
+}
+
+/* 统一美化 Element Plus 按钮 */
+.el-button--primary {
+  --el-button-bg-color: var(--primary-green) !important;
+  --el-button-border-color: var(--primary-green) !important;
+  --el-button-hover-bg-color: #7bbe94 !important;
+  border-radius: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 1px;
+}
+
+/* 全局卡片柔化 */
+.el-card {
+  border-radius: var(--border-radius) !important;
+  border: 1px solid rgba(106, 176, 133, 0.1) !important;
+  box-shadow: var(--shadow-soft) !important;
+  transition: all 0.3s ease;
+}

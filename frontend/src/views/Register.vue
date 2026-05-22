@@ -1,62 +1,51 @@
 <template>
-  <div class="auth-page">
-    <div class="auth-card">
-      <h1 class="auth-title">注册新账号</h1>
-      <p class="auth-subtitle">选择学生或老师身份，开启你的学习之旅</p>
+  <div class="register-page">
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
 
-      <form class="auth-form" @submit.prevent="handleSubmit">
-        <div class="form-group">
-          <label>用户名</label>
-          <input
-            v-model="form.user_name"
-            type="text"
-            placeholder="请输入用户名"
-            required
+    <div class="glass-container">
+      <div class="brand">
+        <div class="logo serif-text">栖</div>
+        <h1 class="serif-text">新学者注册</h1>
+        <p>开启你的专属学习之旅</p>
+      </div>
+
+      <el-form :model="regForm" class="custom-form" size="large">
+        <el-form-item>
+          <el-input 
+            v-model="regForm.username" 
+            placeholder="请设置学号 / 账号" 
+            class="elegant-input"
           />
-        </div>
-
-        <div class="form-group">
-          <label>密码</label>
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="请输入密码"
-            required
+        </el-form-item>
+        <el-form-item>
+          <el-input 
+            v-model="regForm.password" 
+            type="password" 
+            placeholder="请设置密码" 
+            show-password 
+            class="elegant-input"
           />
+        </el-form-item>
+        <el-form-item>
+          <el-input 
+            v-model="regForm.confirmPassword" 
+            type="password" 
+            placeholder="请再次确认密码" 
+            show-password 
+            class="elegant-input"
+          />
+        </el-form-item>
+        
+        <el-button type="primary" class="submit-btn" @click="handleRegister" :loading="loading">
+          立即注册
+        </el-button>
+
+        <div class="footer-links">
+          <span class="hint-text">已有账号？</span>
+          <el-button link class="nav-link" @click="router.push('/login')">返回登录</el-button>
         </div>
-
-        <div class="form-group">
-          <label>身份</label>
-          <div class="role-group">
-            <label class="role-option">
-              <input
-                type="radio"
-                value="learner"
-                v-model="form.role"
-              />
-              <span>我是学生</span>
-            </label>
-            <label class="role-option">
-              <input
-                type="radio"
-                value="instructor"
-                v-model="form.role"
-              />
-              <span>我是老师</span>
-            </label>
-          </div>
-        </div>
-
-        <div v-if="error" class="error-msg">{{ error }}</div>
-
-        <button class="btn-primary" type="submit" :disabled="loading">
-          {{ loading ? '注册中...' : '注册并登录' }}
-        </button>
-
-        <div class="switch-link">
-          已有账号？<router-link to="/login">去登录</router-link>
-        </div>
-      </form>
+      </el-form>
     </div>
   </div>
 </template>
@@ -64,37 +53,39 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { register } from '@/api/auth'
+import { ElMessage } from 'element-plus'
+import axios from 'axios'
 
 const router = useRouter()
-
-const form = ref({
-  user_name: '',
-  password: '',
-  role: 'learner',
-})
-
 const loading = ref(false)
-const error = ref('')
+const regForm = ref({ username: '', password: '', confirmPassword: '' })
 
-const handleSubmit = async () => {
-  if (!form.value.user_name || !form.value.password) return
+const handleRegister = async () => {
+  if (!regForm.value.username || !regForm.value.password) {
+    ElMessage.warning('请填写完整的账号与密码')
+    return
+  }
+  if (regForm.value.password !== regForm.value.confirmPassword) {
+    ElMessage.warning('两次输入的密码不一致，请检查')
+    return
+  }
+
   loading.value = true
-  error.value = ''
   try {
-    const res = await register({
-      user_name: form.value.user_name,
-      password: form.value.password,
-      role: form.value.role,
+    const res = await axios.post('http://localhost:3000/api/register', {
+      username: regForm.value.username,
+      password: regForm.value.password
     })
-
-    const { user, token } = res.data
-    localStorage.setItem('token', token)
-    localStorage.setItem('user', JSON.stringify(user))
-
-    router.push('/search')
-  } catch (e) {
-    error.value = e.response?.data?.message || '注册失败，请稍后重试'
+    
+    if (res.data.success) {
+      ElMessage({ message: res.data.message, type: 'success' })
+      // 注册成功后，延迟 1 秒跳转到登录页
+      setTimeout(() => {
+        router.push('/login')
+      }, 1000)
+    }
+  } catch (err) {
+    ElMessage.error(err.response?.data?.message || '注册失败，请检查网络')
   } finally {
     loading.value = false
   }
@@ -102,106 +93,52 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-.auth-page {
-  min-height: 100vh;
+.register-page {
+  height: 100vh;
+  background-color: var(--paper-cream);
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-}
-
-.auth-card {
-  width: 380px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 30px 26px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-.auth-title {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.auth-subtitle {
-  font-size: 13px;
-  color: #5f6368;
-  margin-bottom: 20px;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  font-size: 13px;
-  color: #202124;
-}
-
-.form-group input {
-  height: 36px;
-  border-radius: 6px;
-  border: 1px solid #dadce0;
-  padding: 0 10px;
-  font-size: 14px;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.2);
-}
-
-.role-group {
-  display: flex;
-  gap: 16px;
-}
-
-.role-option {
-  display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  position: relative;
+  overflow: hidden;
 }
 
-.error-msg {
-  color: #d93025;
-  font-size: 13px;
+.bg-glow { position: absolute; border-radius: 50%; filter: blur(80px); z-index: 0; }
+.glow-1 { width: 400px; height: 400px; background: rgba(106, 176, 133, 0.2); top: -100px; left: -100px; }
+.glow-2 { width: 500px; height: 500px; background: rgba(197, 164, 126, 0.15); bottom: -150px; right: -100px; }
+
+.glass-container {
+  position: relative; z-index: 1;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  padding: 50px 40px; border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  width: 380px;
 }
 
-.btn-primary {
-  margin-top: 4px;
-  width: 100%;
-  height: 38px;
-  border: none;
-  border-radius: 6px;
-  background: #1a73e8;
-  color: #fff;
-  font-size: 14px;
-  cursor: pointer;
+.brand { text-align: center; margin-bottom: 30px; }
+.logo {
+  background: var(--primary-green); color: white; width: 50px; height: 50px;
+  line-height: 50px; border-radius: 14px; font-size: 24px; margin: 0 auto 12px;
+  box-shadow: 0 8px 16px rgba(106, 176, 133, 0.3);
+}
+.brand h1 { color: var(--deep-green); margin: 0; font-size: 24px; letter-spacing: 2px; }
+.brand p { color: #8fa799; font-size: 14px; margin-top: 8px; }
+
+:deep(.elegant-input .el-input__wrapper) {
+  background-color: rgba(255, 255, 255, 0.8); border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important; padding: 4px 15px;
+}
+:deep(.elegant-input .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--primary-green) !important;
 }
 
-.btn-primary:disabled {
-  opacity: 0.7;
-  cursor: default;
-}
+.submit-btn { width: 100%; height: 48px; font-size: 16px; margin-top: 10px; }
 
-.switch-link {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #5f6368;
+.footer-links {
+  margin-top: 20px; text-align: center; font-size: 14px;
 }
-
-.switch-link a {
-  color: #1a73e8;
-}
+.hint-text { color: #8fa799; }
+.nav-link { color: var(--primary-green); font-weight: bold; margin-left: 5px; }
 </style>

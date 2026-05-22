@@ -1,420 +1,253 @@
-<!-- 视频详情页 -->
 <template>
-  <CourseDetailView
-    :course="course"
-    :instructor="instructor"
-    :chapters="chapters"
-    :reviews="reviews"
-    :related-courses="relatedCourses"
-    :course-overview="courseOverview"
-    :learning-objectives="learningObjectives"
-    :course-features="courseFeatures"
-    :active-tab="activeTab"
-    :is-favorite="isFavorite"
-    :is-enrolled="isEnrolled"
-    :is-toggling-library="isTogglingLibrary"
-    :new-rating="newRating"
-    :new-review-content="newReviewContent"
-    :is-submitting="isSubmitting"
-    @update:active-tab="activeTab = $event"
-    @toggle-chapter="toggleChapter"
-    @go-to-first-video="handleGoToFirstVideo"
-    @go-to-video="handleGoToVideo"
-    @toggle-favorite="toggleFavorite"         
-    @enroll-course="handleEnrollCourse"    
-    @update:new-rating="newRating = $event"
-    @update:new-review-content="newReviewContent = $event"
-    @handle-submit-review="handleSubmitReview"
-  />
+  <div class="detail-page">
+    <div class="top-nav">
+      <el-button link @click="router.back()" class="back-btn">
+        <i class="el-icon-back"></i> ← 返回大厅
+      </el-button>
+      <span class="logo serif-text">栖学课堂</span>
+    </div>
+
+    <main class="course-container" v-if="course">
+      <div class="video-section">
+        <div class="player-wrapper">
+          <video 
+            class="styled-player" 
+            controls 
+            :src="course.video_url || 'https://www.w3schools.com/html/mov_bbb.mp4'" 
+            :poster="course.cover_image">
+            您的浏览器不支持视频播放。
+          </video>
+        </div>
+        
+        <div class="info-section">
+          <h1 class="serif-text">{{ course.title }}</h1>
+          <div class="meta-tags">
+            <span class="tag">{{ course.category }}</span>
+            <span class="teacher">主讲：{{ course.teacher_id }} 号导师</span>
+          </div>
+          <p class="description">{{ course.description }}</p>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <el-card class="progress-card">
+          <h3 class="serif-text">学习进度</h3>
+          <el-progress :percentage="0" color="#6ab085" />
+          <p class="encouragement">千里之行，始于足下。点击播放开始你的学习吧！</p>
+          
+          <el-button 
+            type="primary" 
+            class="action-btn" 
+            plain 
+            @click="dialogVisible = true"
+            :disabled="isSubmitted"
+          >
+            {{ isSubmitted ? '作业已提交 (待批阅)' : '撰写课程作业' }}
+          </el-button>
+        </el-card>
+      </aside>
+    </main>
+
+    <el-dialog
+      v-model="dialogVisible"
+      title="✍️ 课程作业"
+      width="500px"
+      class="elegant-dialog"
+      :show-close="false"
+    >
+      <div class="dialog-content">
+        <p class="dialog-subtitle serif-text">请在下方书写你的学习心得与作业解答：</p>
+        <el-input
+          v-model="assignmentContent"
+          type="textarea"
+          :rows="6"
+          placeholder="在此留下你的思考..."
+          class="elegant-textarea"
+        />
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">先存草稿</el-button>
+          <el-button type="primary" @click="submitAssignment" :loading="submitting">
+            郑重提交
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import CourseDetailView from '@/components/layout/CourseDetailView.vue'
-import { 
-  getCourseDetail, 
-  getCourseChapters,
-  getCourseReviews,
-  getRelatedCourses,
-  submitCourseReview
-} from '@/api/courseVideo'
+import { ElMessage } from 'element-plus'
+import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
-const activeTab = ref('overview')
-const isFavorite = ref(false)
-const isEnrolled = ref(false)
-const isTogglingLibrary = ref(false)
 
-const API_BASE = 'http://localhost:4000' // 添加 API_BASE 常量
+const course = ref(null)
+const currentUser = ref(null)
 
-const course = ref({
-  id: null,
-  title: '',
-  description: '',
-  rating: 0,
-  reviewCount: 0,
-  studentCount: '0',
-  duration: 0,
-  difficulty: '',
-  categoryName: ''
+// 作业相关的响应式变量
+const dialogVisible = ref(false)
+const assignmentContent = ref('')
+const submitting = ref(false)
+const isSubmitted = ref(false)
+
+onMounted(async () => {
+  const user = localStorage.getItem('user')
+  if (user) {
+    currentUser.value = JSON.parse(user)
+  }
+
+  const courseId = route.params.id
+  try {
+    const res = await axios.get(`http://localhost:3000/api/courses/${courseId}`)
+    if (res.data.success) {
+      course.value = res.data.data
+    }
+  } catch (error) {
+    ElMessage.error('加载课程信息失败')
+    router.push('/dashboard')
+  }
 })
 
-const instructor = ref({
-  name: '',
-  title: '',
-  intro: '',
-  avatar: ''
-})
-
-const chapters = ref([])
-const reviews = ref([])
-const relatedCourses = ref([])
-
-// 课程扩展信息
-const courseOverview = ref('')
-const learningObjectives = ref([])
-const courseFeatures = ref([])
-
-// 新评价表单
-const newRating = ref(5)
-const newReviewContent = ref('')
-const isSubmitting = ref(false)
-
-const toggleChapter = (chapterId) => {
-  const chapter = chapters.value.find(ch => ch.id === chapterId)
-  if (chapter) {
-    chapter.isOpen = !chapter.isOpen
-  }
-}
-
-// 报名课程
-// 修改 handleEnrollCourse 函数，添加更多调试信息
-const handleEnrollCourse = async () => {
-  if (!course.value.id) return
-  
-  isTogglingLibrary.value = true
-  try {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      alert('请先登录后再操作')
-      router.push('/login')
-      return
-    }
-    
-    // 调用新的报名接口
-    const url = `${API_BASE}/api/personal/library/${course.value.id}/enroll`
-    
-    console.log('🚀 发送报名请求:', url)
-    
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    
-    const data = await res.json()
-    
-    console.log('📦 报名响应:', data)
-    
-    if (data.success) {
-      // 直接使用后端返回的 is_enrolled 字段
-      isEnrolled.value = data.data?.is_enrolled ?? true
-      
-      alert(data.message || '报名成功！')
-      
-      console.log(`✅ 报名状态更新为: 已报名`)
-      console.log(`📊 当前章节数据:`, chapters.value)
-      console.log(`📊 章节数量:`, chapters.value.length)
-    } else {
-      alert(data.message || '报名失败')
-    }
-  } catch (error) {
-    console.error('🔥 报名失败:', error)
-    alert('报名失败：' + error.message)
-  } finally {
-    isTogglingLibrary.value = false
-  }
-}
-
-// 检查课程状态（报名和收藏）
-const checkCourseStatus = async (courseId) => {
-  if (!courseId) return
-  
-  try {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      isFavorite.value = false
-      isEnrolled.value = false
-      return
-    }
-    
-    console.log('🔍 检查课程状态:', courseId)
-    
-    // 调用检查状态的接口（应该同时返回报名和收藏状态）
-    const url = `${API_BASE}/api/personal/library/${courseId}/status`
-    
-    const res = await fetch(url, {
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    
-    if (!res.ok) {
-      console.warn('课程状态接口不可用:', res.status)
-      isFavorite.value = false
-      isEnrolled.value = false
-      return
-    }
-    
-    const data = await res.json()
-    
-    console.log('📊 课程状态响应:', data)
-    
-    if (data.success) {
-      // 根据后端返回的字段名设置状态
-      isEnrolled.value = data.data?.is_enrolled || false
-      isFavorite.value = data.data?.is_favorite || false
-      
-      console.log(`📋 课程状态: 报名=${isEnrolled.value ? '是' : '否'}, 收藏=${isFavorite.value ? '是' : '否'}`)
-    } else {
-      console.warn('获取课程状态失败:', data.message)
-      isFavorite.value = false
-      isEnrolled.value = false
-    }
-  } catch (error) {
-    console.warn('⚠️ 获取课程状态失败:', error)
-    isFavorite.value = false
-    isEnrolled.value = false
-  }
-}
-
-// 修改 loadCourseData 函数，添加章节数据调试
-const loadCourseData = async () => {
-  const courseId = route.params.courseId || route.params.id
-  if (!courseId) return
-
-  try {
-    // 获取课程详情和章节信息
-    const [courseRes, chaptersRes] = await Promise.all([
-      getCourseDetail(courseId),
-      getCourseChapters(courseId)
-    ])
-
-    const c = (courseRes && courseRes.data) || courseRes || {}
-    console.log('🔔 后端课程原始数据:', c)
-    course.value = {
-      id: c.course_id,
-      title: c.course_name || '未命名课程',
-      description: c.course_desc || '',
-      // 兼容后端字段 cover_img 或 image，保持与 CourseCard 使用的 `image` 字段一致
-      image: c.cover_img ? (c.cover_img.startsWith('http') ? c.cover_img : `${API_BASE}${c.cover_img}`) : (c.image || c.cover || ''),
-      rating: c.rating || 0,
-      reviewCount: c.rating_count || 0,
-      studentCount: String(c.student_count || 0),
-      duration: c.course_duration || 0,
-      difficulty: c.difficulty_level || '初级',
-      categoryName: c.category_name || '未分类'
-    }
-    console.log('🔔 计算后前端 course.image:', course.value.image)
-
-    // 解析章节信息
-    const rawChapters = (chaptersRes && chaptersRes.data) || chaptersRes || []
-    console.log('📋 原始章节数据:', rawChapters)
-    
-    chapters.value = rawChapters.map((ch, index) => {
-      const videos = ch.videos || []
-      const chapterData = {
-        id: ch.chapter_id,
-        title: ch.chapter_title || `第${index + 1}章`,
-        lessonCount: videos.length,
-        isOpen: index === 0, // 默认打开第一章
-        lessons: videos.map(v => ({
-          id: v.video_id,
-          title: v.video_title || `视频${index + 1}`,
-          duration: Math.round((v.duration_seconds || 0) / 60) || 0
-        }))
-      }
-      console.log(`📝 章节${index + 1}处理结果:`, chapterData)
-      return chapterData
-    })
-    
-    console.log(`✅ 最终章节数据:`, chapters.value)
-    console.log(`📊 章节数量:`, chapters.value.length)
-
-    // 统一检查课程状态（报名和收藏）
-    await checkCourseStatus(courseId)
-    
-    console.log(`🔍 状态检查完成: 报名=${isEnrolled.value}, 收藏=${isFavorite.value}`)
-
-    
-    // 加载课程评价
-    try {
-      const reviewsRes = await getCourseReviews(courseId, 10)
-      const reviewsData = (reviewsRes && reviewsRes.data) || reviewsRes || []
-      reviews.value = (Array.isArray(reviewsData) ? reviewsData : reviewsData.data || []).map(r => ({
-        id: r.comment_id,
-        name: r.user_name,
-        job: r.occupation || '学员',
-        avatar: r.user_name ? r.user_name.charAt(0) : '用',
-        content: r.comment_content,
-        rating: r.rating || 5
-      }))
-    } catch (err) {
-      console.warn('获取课程评价失败:', err)
-    }
-
-    // 加载相关课程推荐
-    try {
-      const relatedRes = await getRelatedCourses(courseId, 4)
-      const relatedData = (relatedRes && relatedRes.data) || relatedRes || []
-      const courses = Array.isArray(relatedData) ? relatedData : relatedData.data || []
-      relatedCourses.value = courses.map(rc => ({
-        id: rc.course_id,
-        title: rc.course_name,
-        description: rc.course_desc,
-        instructor: rc.teacher_name || '未知讲师',
-        students: String(rc.student_count || 0),
-          rating: rc.rating || 0,
-          difficulty: rc.difficulty_level || '初级',
-          // 与首页 CourseCard 保持一致：提供原始图片 URL（不包裹 `url(...)`），让 CourseCard 处理样式与回退
-          image: rc.cover_img
-            ? (rc.cover_img.startsWith('http') ? rc.cover_img : `${API_BASE}${rc.cover_img}`)
-            : (rc.image || rc.cover || '')
-      }))
-    } catch (err) {
-      console.warn('获取相关课程失败:', err)
-    }
-  } catch (error) {
-    console.error('加载课程详情失败:', error)
-  }
-}
-
-// 跳转到第一个视频（已报名才能访问）
-const handleGoToFirstVideo = () => {
-  if (!isEnrolled.value) {
-    alert('请先报名课程才能开始学习')
+// 提交作业的核心逻辑
+const submitAssignment = async () => {
+  if (!assignmentContent.value.trim()) {
+    ElMessage.warning('作业内容不能是一张白纸哦')
     return
   }
-  
-  if (!course.value.id || !chapters.value.length) return
-  const firstChapter = chapters.value[0]
-  const firstLesson = firstChapter.lessons && firstChapter.lessons[0]
-  if (!firstLesson) return
 
-  router.push(`/course/${course.value.id}/video/${firstLesson.id}`)
-}
-
-// 跳转到指定视频（已报名才能访问）
-const handleGoToVideo = (videoId) => {
-  if (!isEnrolled.value) {
-    alert('请先报名课程才能学习视频')
-    return
-  }
-  
-  if (!course.value.id || !videoId) return
-  router.push(`/course/${course.value.id}/video/${videoId}`)
-}
-
-const toggleFavorite = async () => {
-  if (!course.value.id) return
-  
+  submitting.value = true
   try {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      alert('请先登录后再收藏')
-      router.push('/login')
-      return
+    const payload = {
+      course_id: course.value.id,
+      student_id: currentUser.value.id,
+      content: assignmentContent.value
     }
-    
-    const targetStatus = !isFavorite.value
-    
-    console.log(`❤️ 切换收藏状态: 课程ID=${course.value.id}, 目标状态=${targetStatus}`)
-    
-    // 调用收藏接口
-    const res = await fetch(`${API_BASE}/api/personal/favorites/${course.value.id}/toggle`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        isFavorite: targetStatus
-      })
-    })
-    
-    const data = await res.json()
-    console.log('📦 收藏响应:', data)
-    
-    if (data.success) {
-      // 更新前端状态
-      isFavorite.value = data.data?.is_favorite ?? targetStatus
-      console.log(`✅ 收藏状态更新为: ${isFavorite.value ? '已收藏' : '未收藏'}`)
-      
-      // 显示提示信息
-      alert(isFavorite.value ? '已添加到收藏' : '已取消收藏')
-    } else {
-      // 如果收藏失败
-      alert(data.message || '操作失败')
-    }
-    
-  } catch (error) {
-    console.error('更新收藏状态失败:', error)
-    alert('操作失败：' + error.message)
-  }
-}
 
-// 提交课程评价
-const handleSubmitReview = async () => {
-  if (!course.value.id || !newReviewContent.value.trim()) return
-  
-  isSubmitting.value = true
-  try {
-    await submitCourseReview(course.value.id, newRating.value, newReviewContent.value.trim())
+    const res = await axios.post('http://localhost:3000/api/assignments', payload)
     
-    // 清空表单
-    newRating.value = 5
-    newReviewContent.value = ''
-    
-    // 重新加载评价列表
-    const reviewsRes = await getCourseReviews(course.value.id, 10)
-    const reviewsData = (reviewsRes && reviewsRes.data) || reviewsRes || []
-    reviews.value = (Array.isArray(reviewsData) ? reviewsData : reviewsData.data || []).map(r => ({
-      id: r.comment_id,
-      name: r.user_name,
-      job: r.occupation || '学员',
-      avatar: r.user_name ? r.user_name.charAt(0) : '用',
-      content: r.comment_content,
-      rating: r.rating || 5
-    }))
-    
-    alert('评价提交成功！')
-  } catch (error) {
-    console.error('提交评价失败:', error)
-    if (error.response?.status === 401) {
-      alert('请先登录后再发表评价')
-    } else {
-      alert('评价提交失败，请稍后重试')
+    if (res.data.success) {
+      ElMessage({ message: res.data.message, type: 'success' })
+      dialogVisible.value = false
+      isSubmitted.value = true
     }
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || '提交失败')
   } finally {
-    isSubmitting.value = false
+    submitting.value = false
   }
 }
-
-onMounted(() => {
-  loadCourseData()
-})
-
-watch(
-  () => route.params.courseId,
-  () => {
-    isFavorite.value = false
-    isEnrolled.value = false
-    loadCourseData()
-  }
-)
 </script>
+
+<style scoped>
+.detail-page {
+  min-height: 100vh;
+  background-color: var(--paper-cream);
+}
+
+.top-nav {
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(106, 176, 133, 0.1);
+}
+
+.back-btn { color: #8fa799; font-size: 16px; }
+.back-btn:hover { color: var(--primary-green); }
+
+.logo {
+  color: var(--deep-green);
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.course-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 2.5fr 1fr;
+  gap: 30px;
+}
+
+.player-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(106, 176, 133, 0.15);
+  background-color: #000;
+  line-height: 0;
+}
+.styled-player { width: 100%; max-height: 500px; outline: none; }
+
+.info-section {
+  margin-top: 30px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+}
+.info-section h1 {
+  margin: 0 0 15px;
+  color: var(--deep-green);
+  font-size: 28px;
+}
+.meta-tags {
+  display: flex; gap: 15px; align-items: center; margin-bottom: 20px;
+}
+.tag {
+  background: var(--light-mint); color: var(--primary-green);
+  padding: 4px 12px; border-radius: 12px; font-size: 14px;
+}
+.teacher { color: #8fa799; font-size: 14px; }
+.description { color: var(--text-main); line-height: 1.8; }
+
+.sidebar { position: sticky; top: 80px; }
+.progress-card { padding: 10px; text-align: center; }
+.progress-card h3 { color: var(--deep-green); margin-top: 0; }
+.encouragement { color: #8fa799; font-size: 14px; margin: 20px 0; }
+.action-btn { width: 100%; }
+
+/* 优雅的弹窗与文本框样式 */
+:deep(.elegant-dialog) {
+  border-radius: 20px;
+  overflow: hidden;
+}
+:deep(.elegant-dialog .el-dialog__header) {
+  background-color: var(--light-mint);
+  margin-right: 0;
+  padding: 20px;
+  border-bottom: 1px solid rgba(106, 176, 133, 0.1);
+}
+:deep(.elegant-dialog .el-dialog__title) {
+  color: var(--deep-green);
+  font-family: 'Noto Serif SC', serif;
+  font-weight: bold;
+}
+.dialog-subtitle {
+  color: #8fa799;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+:deep(.elegant-textarea .el-textarea__inner) {
+  background-color: var(--paper-cream);
+  border: 1px solid #e0ede5;
+  border-radius: 12px;
+  padding: 15px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-main);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+:deep(.elegant-textarea .el-textarea__inner:focus) {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 1px var(--primary-green);
+}
+</style>

@@ -1,72 +1,66 @@
 <<<<<<< HEAD
-=======
-# 项目名称：在线学习平台
+本项目是一个面向中小学生的轻量化在线学习平台，支持课程学习、习题练习和错题本功能。
 
-## 小组成员
+本项目是面向高校学子的全栈式在线学习社区平台，旨在构建一个宁静、高效的学习生态。系统主要实现以下核心能力：
 
-| 姓名 | 学号 | 分工 |
+用户体系：学生注册/登录、个人中心（年级变更、用户名修改、密码安全管理）；
 
+课程核心：多领域课程分类展示、沉浸式视频点播（支持进度记录）、课程作业提交；
 
-| 王少伟 | 2312190108  | 前端开发 | VS Code | HTML/CSS/JavaScript、Vue3、Element Plus、Axios |
+互动社区：全站讨论区、提笔发帖、探讨盖楼互动；
 
-
-| 孙嘉晟| 2312190130 |后端开发 + 数据库设计 | IntelliJ IDEA/VS Code | Java、Spring Boot、MyBatis-Plus、MySQL 8.0 |
-
-
->>>>>>> feature/王少伟-frontend-doc
-# 墨智课程在线学习平台 (MozhiCourse)
-
-[![CI](https://github.com/sssttt11/online-learning-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sssttt11/online-learning-platform/actions)
-[![Frontend Coverage](https://codecov.io/gh/sssttt11/online-learning-platform/branch/main/graph/badge.svg?flag=frontend)](https://codecov.io/gh/sssttt11/online-learning-platform)
-[![Backend Coverage](https://codecov.io/gh/sssttt11/online-learning-platform/branch/main/graph/badge.svg?flag=backend)](https://codecov.io/gh/sssttt11/online-learning-platform)
-
-## 项目简介
-<<<<<<< HEAD
-本项目是一个面向中小学生的轻量化在线学习平台，支持课程学习、习题练习和错题本功能。已配置自动化 CI/CD 流水线与代码覆盖率检查。
-=======
+管理控制：管理员仪表盘（数据看板）、可扩展课程发布引擎、社区舆情一键管控。
 
 
-本项目是面向中小学生的轻量化在线学习平台，核心目标是降低操作门槛、聚焦学习核心需求，主要实现以下核心能力：
 
-1. 基础用户体系：学生注册/登录、个人信息管理（昵称、年级、学科偏好）；
-2. 课程核心功能：按年级/学科筛选课程、课程详情展示、视频点播（支持倍速/进度记忆）；
-3. 习题辅助功能：课程配套习题作答、自动判分、错题本自动归集；
-4. 数据轻量化：无复杂推荐算法，仅保留核心学习数据（学习时长、错题记录），保证系统响应速度。
+技术架构
+前端 (Frontend)
+核心框架：Vue 3 (Composition API) + Vite 5
 
-## 技术栈（初步规划）
+UI 交互：Element Plus (深度定制书卷气主题)
 
-### 前端
+状态管理：LocalStorage 配合 Axios 拦截器实现无感鉴权
 
-1. 页面开发：
+可视化：ECharts 5 (课程分类占比与学习活跃度分析)
 
-   * 登录/注册页、个人中心页、课程列表页、课程详情页、习题作答页、错题本页；
-   * 页面适配：兼容PC端主流浏览器（Chrome/Firefox/Edge），保证基础响应式（适配1366px及以上分辨率）；
+交互细节：毛玻璃视效 (backdrop-filter)、平滑动效、响应式布局
 
-2. 交互实现：
+后端 (Backend)
+服务端引擎：Node.js + Express
 
-   * 登录状态持久化（LocalStorage）、表单校验（非空/格式验证）；
-   * 视频播放控制（播放/暂停/倍速/进度条拖拽）、习题作答即时反馈；
-   * 接口对接：通过Axios调用后端接口，处理请求/响应（加载状态、错误提示）；
+数据持久化：MySQL 8.0
 
-3. 基础优化：
+异步驱动：mysql2/promise (支持 async/await 异步连接池)
 
-   * 页面加载骨架屏、接口请求防抖/节流（如搜索框）、视频懒加载。
+安全机制：RESTful API 规范、统一数据返回格式、级联删除策略
 
-### 后端
+系统功能模块
+1. 课程与学习模块
+多维分类：支持公共基础、外语考级、IT技术等多种大学刚需课程分类。
 
-1. 数据库设计：
+智能记录：记录学习进度，详情页提供直观的进度条反馈。
 
-   * 设计核心表：用户表（user）、课程表（course）、视频表（video）、习题表（exercise）、作答记录表（answer\_record）、错题本表（wrong\_question）；
-   * 字段设计：保证核心字段（用户ID、课程ID、时间戳），避免冗余，设置合理主键/外键；
+作业闭环：支持在线撰写课程作业，提交后状态实时更新（待批阅）。
 
-2. 接口开发：
+2. 管理员仪表盘 (Admin Panel)
+数据大屏：通过 ECharts 展示平台活跃度趋势及分类数据分布。
 
-   * 用户模块：注册/登录（密码加密）、个人信息查询/修改；
-   * 课程模块：课程列表查询（按年级/学科筛选）、课程详情查询、视频地址获取；
-   * 习题模块：习题列表查询、作答结果提交/判分、错题本查询/删除；
+动态发课：提供“搜索+创建”式分类引擎，无需修改代码即可定义新分类。
 
-3. 基础保障：
+舆情管控：可视化管理社区帖子，集成气泡确认框进行“强制删帖”操作，维护学术氛围。
 
-   * 接口参数校验、异常处理（如空值/越界）、简单权限控制（仅登录用户可访问课程）；
-   * 数据库连接池配置、SQL优化（避免全表查询）。
->>>>>>> feature/王少伟-frontend-doc
+3. 互动社区 (Community)
+全站交流：瀑布流式展示探讨主题，支持根据评论数排序。
+
+盖楼评论：沉浸式讨论空间，展示发帖人身份（用户名/年级标签）。
+
+开发规范
+CI/CD：项目集成 GitHub Actions 自动化流水线，每次推送自动触发单元测试与代码质量检查。
+
+测试覆盖率：基于 V8 引擎进行代码覆盖率统计，确保核心交互组件（Login, CourseCard, AdminPanel）均达到 85% 以上覆盖率。
+
+目录结构：
+
+/frontend: 包含 /src/views (业务逻辑), /src/router (路由控制), /src/assets (全局美学样式)
+
+/backend: 包含 server.js (核心路由), db.js (数据库连接)
