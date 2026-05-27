@@ -231,20 +231,34 @@ app.put('/api/user/password/:id', async (req, res) => {
 // ================= 社区互动接口 =================
 
 /**
- * 10. 获取所有帖子列表 (包含作者信息和评论数) (GET /api/posts)
+ * 10. 获取所有帖子列表 (支持最新/热门排序，并返回当前用户的点赞状态)
  */
 app.get('/api/posts', async (req, res) => {
+    const { user_id, sort } = req.query; // sort 可以是 'latest' 或 'trending'
+    
+    // 默认按时间倒序
+    let orderClause = 'ORDER BY p.created_at DESC';
+    if (sort === 'trending') {
+        // 热度算法：点赞数权重为2，评论数权重为5。按总分倒序排列
+        orderClause = 'ORDER BY (p.likes_count * 2 + (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) * 5) DESC, p.created_at DESC';
+    }
+
     try {
+        // 使用子查询获取评论数，以及当前用户是否点赞过该帖子
         const query = `
-            SELECT p.id, p.title, p.content, p.created_at, u.username, u.grade,
+            SELECT p.id, p.title, p.content, p.created_at, p.likes_count, u.username, u.grade,
                    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as comment_count
+                   ${user_id ? `, (SELECT COUNT(*) FROM post_likes pl WHERE pl.post_id = p.id AND pl.user_id = ?) as is_liked` : ''}
             FROM posts p
             JOIN users u ON p.user_id = u.id
-            ORDER BY p.created_at DESC
+            ${orderClause}
         `;
-        const [posts] = await db.query(query);
+        
+        const params = user_id ? [user_id] : [];
+        const [posts] = await db.query(query, params);
         res.json({ success: true, data: posts });
     } catch (error) {
+        console.error('获取帖子失败:', error);
         res.status(500).json({ success: false, message: '获取社区帖子失败' });
     }
 });
@@ -314,5 +328,157 @@ app.delete('/api/posts/:id', async (req, res) => {
     } catch (error) {
         console.error('删帖报错:', error);
         res.status(500).json({ success: false, message: '删除失败，请联系技术人员' });
+    }
+});
+
+/**
+ * 15. [管理员] 编辑更新课程信息 (PUT /api/courses/:id)
+ */
+app.put('/api/courses/:id', async (req, res) => {
+    const { title, description, cover_image, video_url, category } = req.body;
+    try {
+        await db.query(
+            'UPDATE courses SET title = ?, description = ?, cover_image = ?, video_url = ?, category = ? WHERE id = ?',
+            [title, description, cover_image, video_url, category, req.params.id]
+        );
+        res.json({ success: true, message: '课程信息更新成功！' });
+    } catch (error) {
+        console.error('更新课程报错:', error);
+        res.status(500).json({ success: false, message: '更新失败，请稍后重试' });
+    }
+});
+
+/**
+ * 16. [管理员] 下架(删除)课程 (DELETE /api/courses/:id)
+ */
+app.delete('/api/courses/:id', async (req, res) => {
+    try {
+        await db.query('DELETE FROM courses WHERE id = ?', [req.params.id]);
+        res.json({ success: true, message: '课程已成功下架' });
+    } catch (error) {
+        console.error('下架课程报错:', error);
+        res.status(500).json({ success: false, message: '下架失败，请检查相关数据' });
+    }
+});
+
+/**
+ * 17. 检查学生是否已选修某门课 (GET /api/enrollments/check)
+ */
+app.get('/api/enrollments/check', async (req, res) => {
+    const { student_id, course_id } = req.query;
+    if (!student_id || !course_id) return res.json({ success: false });
+
+    try {
+        const [rows] = await db.query(
+            'SELECT * FROM enrollments WHERE student_id = ? AND course_id = ?', 
+            [student_id, course_id]
+        );
+        res.json({ success: true, isEnrolled: rows.length > 0 });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '检查选课状态失败' });
+    }
+});
+
+/**
+ * 18. 学生正式选课接口 (POST /api/enrollments)
+ */
+app.post('/api/enrollments', async (req, res) => {
+    const { student_id, course_id } = req.body;
+    try {
+        // 防重复选课校验
+        const [existing] = await db.query('SELECT * FROM enrollments WHERE student_id = ? AND course_id = ?', [student_id, course_id]);
+        if (existing.length > 0) {
+            return res.status(400).json({ success: false, message: '你已经选过这门课啦' });
+        }
+
+        // 插入选课记录，初始进度设为 0
+        await db.query(
+            'INSERT INTO enrollments (student_id, course_id, progress) VALUES (?, ?, 0)',
+            [student_id, course_id]
+        );
+        res.json({ success: true, message: '选课成功，已收入你的个人书斋！' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '选课失败，请稍后再试' });
+    }
+});
+
+/**
+ * 19. 获取当前学生在某门课写的所有时间轴笔记 (GET /api/notes)
+ */
+app.get('/api/notes', async (req, res) => {
+    const { user_id, course_id } = req.query;
+    if (!user_id || !course_id) return res.status(400).json({ success: false, message: '缺乏必要参数' });
+
+    try {
+        const [notes] = await db.query(
+            'SELECT * FROM course_notes WHERE user_id = ? AND course_id = ? ORDER BY timestamp_secs ASC',
+            [user_id, course_id]
+        );
+        res.json({ success: true, data: notes });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '获取随堂笔记失败' });
+    }
+});
+
+/**
+ * 20. 保存学生随堂时间轴笔记 (POST /api/notes)
+ */
+app.post('/api/notes', async (req, res) => {
+    const { user_id, course_id, content, timestamp_secs } = req.body;
+    if (!content || content.trim() === '') return res.status(400).json({ success: false, message: '笔记内容不能为空' });
+
+    try {
+        await db.query(
+            'INSERT INTO course_notes (user_id, course_id, content, timestamp_secs) VALUES (?, ?, ?, ?)',
+            [user_id, course_id, content, Math.floor(timestamp_secs)]
+        );
+        res.json({ success: true, message: '笔记已镌刻在时间轴上' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '保存笔记失败' });
+    }
+});
+
+/**
+ * 21. 获取某门课程的章节目录 (GET /api/courses/:id/chapters)
+ */
+app.get('/api/courses/:id/chapters', async (req, res) => {
+    try {
+        const [chapters] = await db.query(
+            'SELECT * FROM course_chapters WHERE course_id = ? ORDER BY chapter_number ASC', 
+            [req.params.id]
+        );
+        res.json({ success: true, data: chapters });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '获取章节目录失败' });
+    }
+});
+
+/**
+ * 22. 切换帖子点赞状态 (POST /api/posts/:id/like)
+ */
+app.post('/api/posts/:id/like', async (req, res) => {
+    const post_id = req.params.id;
+    const { user_id } = req.body;
+
+    if (!user_id) return res.status(400).json({ success: false, message: '请先登录' });
+
+    try {
+        // 查询是否已经点过赞
+        const [existing] = await db.query('SELECT * FROM post_likes WHERE user_id = ? AND post_id = ?', [user_id, post_id]);
+        
+        if (existing.length > 0) {
+            // 如果已点赞，则取消点赞
+            await db.query('DELETE FROM post_likes WHERE user_id = ? AND post_id = ?', [user_id, post_id]);
+            await db.query('UPDATE posts SET likes_count = GREATEST(likes_count - 1, 0) WHERE id = ?', [post_id]);
+            res.json({ success: true, action: 'unliked' });
+        } else {
+            // 如果未点赞，则新增点赞
+            await db.query('INSERT INTO post_likes (user_id, post_id) VALUES (?, ?)', [user_id, post_id]);
+            await db.query('UPDATE posts SET likes_count = likes_count + 1 WHERE id = ?', [post_id]);
+            res.json({ success: true, action: 'liked' });
+        }
+    } catch (error) {
+        console.error('点赞失败:', error);
+        res.status(500).json({ success: false, message: '操作失败' });
     }
 });

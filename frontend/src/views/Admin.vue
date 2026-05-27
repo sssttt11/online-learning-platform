@@ -79,7 +79,7 @@
               <h2 class="serif-text">课程资源库</h2>
               <p class="subtitle">管理平台所有上架的课程内容</p>
             </div>
-            <el-button type="primary" @click="dialogVisible = true" class="add-btn">+ 发布新课程</el-button>
+            <el-button type="primary" @click="openAddDialog" class="add-btn">+ 发布新课程</el-button>
           </div>
 
           <el-card class="table-card">
@@ -98,12 +98,24 @@
                   </el-tag>
                 </template>
               </el-table-column>
+              
               <el-table-column label="操作" width="150" fixed="right">
-                <template #default>
-                  <el-button link type="primary">编辑</el-button>
-                  <el-button link type="danger">下架</el-button>
+                <template #default="scope">
+                  <el-button link type="primary" @click="handleEditCourse(scope.row)">编辑</el-button>
+                  <el-popconfirm 
+                    title="确定要下架这门课吗？" 
+                    confirm-button-text="下架" 
+                    cancel-button-text="取消"
+                    confirm-button-type="danger"
+                    @confirm="handleDeleteCourse(scope.row.id)"
+                  >
+                    <template #reference>
+                      <el-button link type="danger">下架</el-button>
+                    </template>
+                  </el-popconfirm>
                 </template>
               </el-table-column>
+
             </el-table>
           </el-card>
         </div>
@@ -152,7 +164,7 @@
       </el-main>
     </el-container>
 
-    <el-dialog v-model="dialogVisible" title="🌿 发布新课程" width="600px" class="elegant-dialog">
+    <el-dialog v-model="dialogVisible" :title="isEditMode ? '📝 编辑课程信息' : '🌿 发布新课程'" width="600px" class="elegant-dialog">
       <el-form :model="courseForm" label-width="80px" class="custom-form">
         <el-form-item label="课程标题">
           <el-input v-model="courseForm.title" placeholder="例如：大学物理期末速成" />
@@ -184,7 +196,9 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="publishCourse" :loading="submitting">确认发布</el-button>
+        <el-button type="primary" @click="saveCourse" :loading="submitting">
+          {{ isEditMode ? '保存修改' : '确认发布' }}
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -198,14 +212,14 @@ import axios from 'axios'
 import * as echarts from 'echarts'
 
 const router = useRouter()
-// 默认展示数据看板
 const activeTab = ref('dashboard') 
 
-// 课程模块变量
+// ================== 课程模块变量 ==================
 const courseList = ref([])
 const loading = ref(false)
 const dialogVisible = ref(false)
 const submitting = ref(false)
+const isEditMode = ref(false) // 新增：标识是否处于编辑模式
 const courseForm = ref({ title: '', category: '', cover_image: '', video_url: '', description: '', teacher_id: 1 })
 
 // 社区模块变量
@@ -233,7 +247,7 @@ const fetchCourses = async () => {
     const res = await axios.get('http://localhost:3000/api/courses')
     if (res.data.success) {
       courseList.value = res.data.data
-      initCharts() // 拉取完课程数据后更新图表
+      initCharts() 
     }
   } catch (error) {
     ElMessage.error('获取课程列表失败')
@@ -242,24 +256,62 @@ const fetchCourses = async () => {
   }
 }
 
-const publishCourse = async () => {
+// 点击发布按钮触发
+const openAddDialog = () => {
+  isEditMode.value = false
+  courseForm.value = { title: '', category: '', cover_image: '', video_url: '', description: '', teacher_id: 1 }
+  dialogVisible.value = true
+}
+
+// 点击编辑按钮触发
+const handleEditCourse = (row) => {
+  isEditMode.value = true
+  courseForm.value = { ...row } // 将当前行数据拷贝入表单
+  dialogVisible.value = true
+}
+
+// 保存逻辑（智能区分编辑和发布）
+const saveCourse = async () => {
   if (!courseForm.value.title || !courseForm.value.category) {
     ElMessage.warning('标题和分类不能为空哦')
     return
   }
+  
   submitting.value = true
   try {
-    const res = await axios.post('http://localhost:3000/api/courses', courseForm.value)
-    if (res.data.success) {
-      ElMessage.success('课程发布成功！')
-      dialogVisible.value = false
-      courseForm.value = { title: '', category: '', cover_image: '', video_url: '', description: '', teacher_id: 1 }
-      fetchCourses()
+    if (isEditMode.value) {
+      // 走编辑路线
+      const res = await axios.put(`http://localhost:3000/api/courses/${courseForm.value.id}`, courseForm.value)
+      if (res.data.success) {
+        ElMessage.success('课程信息已成功更新！')
+      }
+    } else {
+      // 走发布路线
+      const res = await axios.post('http://localhost:3000/api/courses', courseForm.value)
+      if (res.data.success) {
+        ElMessage.success('新课程发布成功！')
+      }
     }
+    
+    dialogVisible.value = false
+    fetchCourses() // 刷新列表
   } catch (error) {
-    ElMessage.error('发布失败')
+    ElMessage.error(isEditMode.value ? '更新失败' : '发布失败')
   } finally {
     submitting.value = false
+  }
+}
+
+// 下架课程逻辑
+const handleDeleteCourse = async (courseId) => {
+  try {
+    const res = await axios.delete(`http://localhost:3000/api/courses/${courseId}`)
+    if (res.data.success) {
+      ElMessage.success('课程已成功下架！')
+      fetchCourses() 
+    }
+  } catch (error) {
+    ElMessage.error('下架失败，请检查网络')
   }
 }
 
@@ -283,7 +335,7 @@ const handleDeletePost = async (postId) => {
     const res = await axios.delete(`http://localhost:3000/api/posts/${postId}`)
     if (res.data.success) {
       ElMessage.success('违规帖子及相关评论已被彻底清除')
-      fetchPosts() // 重新拉取帖子列表
+      fetchPosts() 
     }
   } catch (error) {
     ElMessage.error('删帖失败，请检查网络')
