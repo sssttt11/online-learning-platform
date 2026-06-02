@@ -12,7 +12,7 @@ const jwt = require('jsonwebtoken');
 const db = require('./db');
 
 const app = express();
-
+const logger = require('./utils/logger'); // 🌟 新增：引入日志模块
 // 确保 uploads 文件夹存在，不存在则自动创建
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -36,6 +36,56 @@ app.use(cors()); // 允许前端 Vue 跨域请求
 app.use(express.json()); // 允许后端解析前端传来的 JSON 数据
 
 const SECRET_KEY = 'super_secret_key_for_university_project'; // 用于生成 JWT Token 的密钥
+
+// 🌟 新增：全局指标收集中间件 (请求计数、响应时间、错误率拦截)
+app.use(
+(req, res, next) => {
+    
+const start = Date.now();
+    res.on(
+'finish', () => {
+        
+const duration = Date.now() - start;
+        
+const logData = {
+            
+method: req.method,
+            
+url: req.originalUrl,
+            
+status: res.statusCode,
+            
+durationMs: duration
+        };
+        
+// 依据状态码判断是否为错误率指标
+        
+if (res.statusCode >= 400) {
+            logger.error(
+'API Error', logData);
+        } 
+else {
+            logger.info(
+'API Request', logData);
+        }
+    });
+    next();
+});
+
+
+// 🌟 新增：健康检查端点 (严格按照作业要求的 JSON 格式返回)
+app.get(
+'/health', (req, res) => {
+    res.json({
+        
+status: "healthy",
+        
+timestamp: new Date().toISOString(),
+        
+version: "1.0.0"
+    });
+});
+
 
 // ================= API 路由区 =================
 
