@@ -2,7 +2,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
-const axios = require('axios'); // 🌟 新增：引入 axios 模块
+const axios = require('axios'); // 新增：引入 axios 模块
 
 const multer = require('multer');
 const path = require('path');
@@ -12,7 +12,7 @@ const jwt = require('jsonwebtoken');
 const db = require('./db');
 
 const app = express();
-const logger = require('./utils/logger'); // 🌟 新增：引入日志模块
+const logger = require('./utils/logger'); //  新增：引入日志模块
 // 确保 uploads 文件夹存在，不存在则自动创建
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
