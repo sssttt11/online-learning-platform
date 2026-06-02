@@ -79,29 +79,44 @@
 ### 1. 启动后端 (Backend)
 cd backend
 npm install
-# 请确保本地 MySQL 已启动，并已导入初始 SQL 文件
+请确保本地 MySQL 已启动，并已导入初始 SQL 文件
 npm run dev 
-# 默认运行在 http://localhost:3000
+默认运行在 http://localhost:3000
 
 ###2. 启动前端 (Frontend)
 cd frontend
 npm install
 npm run dev
-# Vite 将自动分配端口，如 http://localhost:5173
+Vite 将自动分配端口，如 http://localhost:5173
 
 📁 核心目录结构
+
 project/
+
 ├── backend/                   # 后端 API 服务层
+
 │   ├── utils/logger.js        # Winston 结构化日志配置
+
 │   ├── uploads/               # 本地图片上传托管目录
+
 │   └── server.js              # 核心路由与数据库/AI控制层
+
 ├── frontend/                  # 前端 Vue 3 渲染层
+
 │   ├── src/
+
 │   │   ├── views/             # 页面视图 (Dashboard, CourseDetail, Profile)
+
 │   │   └── style.css          # 全局 CSS 变量与极简主题
+
 │   └── vite.config.js
+
 ├── docs/                      # 工程与作业交付文档
+
 │   ├── deployment.md          # CI/CD 部署技术架构说明
+
 │   └── monitoring.md          # 可观测性与日志监控配置说明
+
 ├── vercel.json                # Vercel 前端重写与托管引导
+
 └── railway.toml               # Railway Nixpacks 容器化构建引导
