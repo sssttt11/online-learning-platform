@@ -77,16 +77,25 @@
 - MySQL >= 8.0
 
 ### 1. 启动后端 (Backend)
+
 cd backend
+
 npm install
+
 请确保本地 MySQL 已启动，并已导入初始 SQL 文件
+
 npm run dev 
+
 默认运行在 http://localhost:3000
 
 ###2. 启动前端 (Frontend)
+
 cd frontend
+
 npm install
+
 npm run dev
+
 Vite 将自动分配端口，如 http://localhost:5173
 
 📁 核心目录结构
