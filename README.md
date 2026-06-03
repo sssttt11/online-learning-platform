@@ -1,4 +1,8 @@
+<<<<<<< HEAD
  🌿 栖学课堂 (QiXue Classroom)
+=======
+# 🌿 栖学课堂 (QiXue Classroom)
+>>>>>>> f1e9296908069d10f9245dbf44b81a3bf1056598
 
 > 一个探索沉浸式学习与 AI 赋能的现代化在线教育平台。
 
@@ -77,6 +81,7 @@
 - MySQL >= 8.0
 
 ### 1. 启动后端 (Backend)
+<<<<<<< HEAD
 
 cd backend
 
@@ -106,6 +111,30 @@ project/
 
 │   ├── utils/logger.js        # Winston 结构化日志配置
 
+=======
+```bash
+cd backend
+npm install
+# 请确保本地 MySQL 已启动，并已导入初始 SQL 文件
+npm run dev 
+# 默认运行在 http://localhost:3000
+
+2. 启动前端 (Frontend)
+Bash
+cd frontend
+npm install
+npm run dev
+# Vite 将自动分配端口，如 http://localhost:5173
+
+📁 核心目录结构
+
+project/
+
+├── backend/                   # 后端 API 服务层
+
+│   ├── utils/logger.js        # Winston 结构化日志配置
+
+>>>>>>> f1e9296908069d10f9245dbf44b81a3bf1056598
 │   ├── uploads/               # 本地图片上传托管目录
 
 │   └── server.js              # 核心路由与数据库/AI控制层
