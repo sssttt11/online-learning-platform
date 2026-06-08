@@ -84,7 +84,7 @@
               @keyup.enter="sendAiMessage"
             >
               <template #append>
-                <el-button @click="sendAiMessage" style="background: var(--primary-green); color: white; border: none; height: 100%;">发送</el-button>
+                <el-button @click="sendAiMessage" style="background: var(--primary-green); color: black; border: none; height: 100%;">发送</el-button>
               </template>
             </el-input>
           </div>
@@ -309,7 +309,7 @@ const goToCourse = (id) => {
 }
 .chat-bubble.user {
   background: var(--primary-green);
-  color: white;
+  color: rgb(0, 0, 0);
   align-self: flex-end;
   border-bottom-right-radius: 4px;
   box-shadow: 0 4px 12px rgba(106, 176, 133, 0.2);
