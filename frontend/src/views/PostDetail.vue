@@ -70,7 +70,7 @@ const currentUser = ref(null)
 
 const loadPostData = async () => {
   try {
-    const res = await axios.get(`http://localhost:3000/api/posts/${route.params.id}`)
+    const res = await axios.get(`http://47.99.85.173:3000/api/posts/${route.params.id}`)
     if (res.data.success) {
       post.value = res.data.post
       comments.value = res.data.comments
@@ -86,7 +86,7 @@ const submitComment = async () => {
   
   submitting.value = true
   try {
-    const res = await axios.post('http://localhost:3000/api/comments', {
+    const res = await axios.post('http://47.99.85.173:3000/api/comments', {
       post_id: post.value.id,
       user_id: currentUser.value.id,
       content: newComment.value

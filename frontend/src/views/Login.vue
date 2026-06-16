@@ -58,7 +58,7 @@ const handleLogin = async () => {
   }
   loading.value = true
   try {
-    const res = await axios.post('http://localhost:3000/api/login', loginForm.value)
+    const res = await axios.post('http://47.99.85.173:3000/api/login', loginForm.value)
     if (res.data.success) {
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))

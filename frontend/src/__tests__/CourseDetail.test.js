@@ -59,7 +59,7 @@ describe('CourseDetail.vue 真实交互测试', () => {
     await flushPromises()
     
     // 验证是否成功发起了选修课程的请求
-    expect(axios.post).toHaveBeenCalledWith('http://localhost:3000/api/enrollments', expect.any(Object))
+    expect(axios.post).toHaveBeenCalledWith('http://47.99.85.173:3000/api/enrollments', expect.any(Object))
   })
 
   it('场景3：提交笔记与提交作业', async () => {

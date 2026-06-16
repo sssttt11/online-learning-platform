@@ -163,7 +163,7 @@ const loadProfileData = async () => {
 
   // 1. 保留你原有的加载个人信息逻辑
   try {
-    const res = await axios.get(`http://localhost:3000/api/user/profile/${localUser.id}`)
+    const res = await axios.get(`http://47.99.85.173:3000/api/user/profile/${localUser.id}`)
     if (res.data.success) {
       userInfo.value = res.data.user
       editForm.value.username = res.data.user.username
@@ -177,7 +177,7 @@ const loadProfileData = async () => {
 
   // 2. 拉取带有真实进度的课程列表（新接口）
   try {
-    const courseRes = await axios.get(`http://localhost:3000/api/users/${localUser.id}/enrolled-courses`)
+    const courseRes = await axios.get(`http://47.99.85.173:3000/api/users/${localUser.id}/enrolled-courses`)
     if (courseRes.data.success) {
       enrolledCourses.value = courseRes.data.data
     }
@@ -185,7 +185,7 @@ const loadProfileData = async () => {
 
   // 3. 拉取时光笔记（新接口）
   try {
-    const noteRes = await axios.get(`http://localhost:3000/api/users/${localUser.id}/all-notes`)
+    const noteRes = await axios.get(`http://47.99.85.173:3000/api/users/${localUser.id}/all-notes`)
     if (noteRes.data.success) {
       myNotes.value = noteRes.data.data
     }
@@ -200,7 +200,7 @@ const handleUpdateProfile = async () => {
 
   updatingProfile.value = true
   try {
-    const res = await axios.put(`http://localhost:3000/api/user/profile/${userInfo.value.id || JSON.parse(localStorage.getItem('user')).id}`, editForm.value)
+    const res = await axios.put(`http://47.99.85.173:3000/api/user/profile/${userInfo.value.id || JSON.parse(localStorage.getItem('user')).id}`, editForm.value)
     if (res.data.success) {
       ElMessage.success('资料更新成功！')
       
@@ -225,7 +225,7 @@ const handleUpdatePassword = async () => {
 
   updatingPwd.value = true
   try {
-    const res = await axios.put(`http://localhost:3000/api/user/password/${userInfo.value.id || JSON.parse(localStorage.getItem('user')).id}`, pwdForm.value)
+    const res = await axios.put(`http://47.99.85.173:3000/api/user/password/${userInfo.value.id || JSON.parse(localStorage.getItem('user')).id}`, pwdForm.value)
     if (res.data.success) {
       ElMessage.success('密码修改成功，请重新登录')
       pwdDialogVisible.value = false

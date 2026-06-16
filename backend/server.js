@@ -584,7 +584,7 @@ app.post('/api/upload', upload.single('cover'), (req, res) => {
         return res.status(400).json({ success: false, message: '没有获取到文件' });
     }
     // 拼接出这张图片在服务器上的完整网络地址
-    const imageUrl = `http://localhost:3000/uploads/${req.file.filename}`;
+    const imageUrl = `http://47.99.85.173:3000/uploads/${req.file.filename}`;
     res.json({ success: true, url: imageUrl });
 });
 

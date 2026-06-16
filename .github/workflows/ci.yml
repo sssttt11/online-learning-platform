@@ -57,7 +57,7 @@ jobs:
         
       - name: Run Tests & Coverage
         env:
-          VITE_API_URL: http://localhost:3000
+          VITE_API_URL: http://47.99.85.173:3000
         run: npm test --prefix frontend
         
       - name: Upload Frontend Coverage

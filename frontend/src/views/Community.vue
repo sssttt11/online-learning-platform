@@ -106,7 +106,7 @@ const currentUser = ref(null)
 const fetchPosts = async () => {
   loading.value = true
   try {
-    const res = await axios.get('http://localhost:3000/api/posts', {
+    const res = await axios.get('http://47.99.85.173:3000/api/posts', {
       params: { 
         sort: sortType.value,
         user_id: currentUser.value?.id 
@@ -138,7 +138,7 @@ const toggleLike = async (post) => {
   }
 
   try {
-    const res = await axios.post(`http://localhost:3000/api/posts/${post.id}/like`, {
+    const res = await axios.post(`http://47.99.85.173:3000/api/posts/${post.id}/like`, {
       user_id: currentUser.value.id
     })
     
@@ -173,7 +173,7 @@ const submitPost = async () => {
   }
   submitting.value = true
   try {
-    const res = await axios.post('http://localhost:3000/api/posts', {
+    const res = await axios.post('http://47.99.85.173:3000/api/posts', {
       user_id: currentUser.value.id,
       title: postForm.value.title,
       content: postForm.value.content

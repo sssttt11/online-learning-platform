@@ -107,7 +107,7 @@ const courseList = ref([])
 // 获取课程数据的函数
 const fetchCourses = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/courses')
+    const res = await axios.get('http://47.99.85.173:3000/api/courses')
     if (res.data.success) {
       courseList.value = res.data.data
     }
@@ -145,7 +145,7 @@ const sendAiMessage = async () => {
 
   // 2. 发送给后端 AI 接口
   try {
-    const res = await axios.post('http://localhost:3000/api/chat', { message: userText })
+    const res = await axios.post('http://47.99.85.173:3000/api/chat', { message: userText })
     if (res.data.success) {
       chatMessages.value.push({ role: 'ai', content: res.data.reply })
     } else {

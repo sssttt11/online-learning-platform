@@ -72,7 +72,7 @@ const handleRegister = async () => {
 
   loading.value = true
   try {
-    const res = await axios.post('http://localhost:3000/api/register', {
+    const res = await axios.post('http://47.99.85.173:3000/api/register', {
       username: regForm.value.username,
       password: regForm.value.password
     })

@@ -149,7 +149,7 @@
         <el-form-item label="课程封面">
           <el-upload
             class="cover-uploader"
-            action="http://localhost:3000/api/upload"
+            action="http://47.99.85.173:3000/api/upload"
             name="cover"
             :show-file-list="false"
             :on-success="handleUploadSuccess"
@@ -210,7 +210,7 @@ const activeTab = ref('dashboard')
 const totalUsersCount = ref(0)
 const fetchTotalUsers = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/users/count')
+    const res = await axios.get('http://47.99.85.173:3000/api/users/count')
     if (res.data.success) {
       totalUsersCount.value = res.data.count
     }
@@ -249,7 +249,7 @@ const handleMenuSelect = (index) => {
 const fetchCourses = async () => {
   loading.value = true
   try {
-    const res = await axios.get('http://localhost:3000/api/courses')
+    const res = await axios.get('http://47.99.85.173:3000/api/courses')
     if (res.data.success) { courseList.value = res.data.data; initCharts() }
   } catch (error) { ElMessage.error('获取课程失败') } finally { loading.value = false }
 }
@@ -269,10 +269,10 @@ const saveCourse = async () => {
   submitting.value = true
   try {
     if (isEditMode.value) {
-      await axios.put(`http://localhost:3000/api/courses/${courseForm.value.id}`, courseForm.value)
+      await axios.put(`http://47.99.85.173:3000/api/courses/${courseForm.value.id}`, courseForm.value)
       ElMessage.success('课程更新成功！')
     } else {
-      await axios.post('http://localhost:3000/api/courses', courseForm.value)
+      await axios.post('http://47.99.85.173:3000/api/courses', courseForm.value)
       ElMessage.success('新课程发布成功！')
     }
     dialogVisible.value = false; fetchCourses()
@@ -306,7 +306,7 @@ const handleUploadSuccess = (res, file) => {
 
 const handleDeleteCourse = async (courseId) => {
   try {
-    const res = await axios.delete(`http://localhost:3000/api/courses/${courseId}`)
+    const res = await axios.delete(`http://47.99.85.173:3000/api/courses/${courseId}`)
     if (res.data.success) { ElMessage.success('课程已下架！'); fetchCourses() }
   } catch (error) { ElMessage.error('下架失败') }
 }
@@ -314,7 +314,7 @@ const handleDeleteCourse = async (courseId) => {
 // 章节管理逻辑
 const fetchAdminChapters = async (courseId) => {
   try {
-    const res = await axios.get(`http://localhost:3000/api/courses/${courseId}/chapters`)
+    const res = await axios.get(`http://47.99.85.173:3000/api/courses/${courseId}/chapters`)
     if (res.data.success) adminChapterList.value = res.data.data
   } catch (error) {}
 }
@@ -326,7 +326,7 @@ const addChapter = async () => {
   if (!newChapterForm.value.title || !newChapterForm.value.video_url) return ElMessage.warning('标题和视频链接必填')
   addingChapter.value = true
   try {
-    const res = await axios.post(`http://localhost:3000/api/courses/${currentManageCourse.value.id}/chapters`, newChapterForm.value)
+    const res = await axios.post(`http://47.99.85.173:3000/api/courses/${currentManageCourse.value.id}/chapters`, newChapterForm.value)
     if (res.data.success) {
       ElMessage.success('章节添加成功！'); await fetchAdminChapters(currentManageCourse.value.id)
       newChapterForm.value = { chapter_number: adminChapterList.value.length + 1, title: '', video_url: '' }
@@ -335,7 +335,7 @@ const addChapter = async () => {
 }
 const deleteChapter = async (chapterId) => {
   try {
-    const res = await axios.delete(`http://localhost:3000/api/chapters/${chapterId}`)
+    const res = await axios.delete(`http://47.99.85.173:3000/api/chapters/${chapterId}`)
     if (res.data.success) { ElMessage.success('章节已移除'); fetchAdminChapters(currentManageCourse.value.id) }
   } catch (error) {}
 }
@@ -344,13 +344,13 @@ const deleteChapter = async (chapterId) => {
 const fetchPosts = async () => {
   loadingPosts.value = true
   try {
-    const res = await axios.get('http://localhost:3000/api/posts')
+    const res = await axios.get('http://47.99.85.173:3000/api/posts')
     if (res.data.success) postList.value = res.data.data
   } catch (error) {} finally { loadingPosts.value = false }
 }
 const handleDeletePost = async (postId) => {
   try {
-    const res = await axios.delete(`http://localhost:3000/api/posts/${postId}`)
+    const res = await axios.delete(`http://47.99.85.173:3000/api/posts/${postId}`)
     if (res.data.success) { ElMessage.success('违规帖子已被彻底清除'); fetchPosts() }
   } catch (error) {}
 }

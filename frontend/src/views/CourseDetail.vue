@@ -242,7 +242,7 @@ const courseProgress = computed(() => {
 
 const fetchProgress = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/progress', {
+    const res = await axios.get('http://47.99.85.173:3000/api/progress', {
       params: { user_id: currentUser.value.id, course_id: course.value.id }
     })
     if (res.data.success) {
@@ -255,7 +255,7 @@ const markChapterCompleted = async () => {
   if (!currentChapter.value) return
   markingProgress.value = true
   try {
-    const res = await axios.post('http://localhost:3000/api/progress', {
+    const res = await axios.post('http://47.99.85.173:3000/api/progress', {
       user_id: currentUser.value.id,
       course_id: course.value.id,
       chapter_id: currentChapter.value.id
@@ -347,7 +347,7 @@ const sendAiMessage = async () => {
   nextTick(() => scrollToBottom())
 
   try {
-    const res = await axios.post('http://localhost:3000/api/chat', { message: userText })
+    const res = await axios.post('http://47.99.85.173:3000/api/chat', { message: userText })
     if (res.data.success) {
       chatMessages.value.push({ role: 'ai', content: res.data.reply })
     } else {
@@ -371,7 +371,7 @@ onMounted(async () => {
   const courseId = route.params.id
   
   try {
-    const res = await axios.get(`http://localhost:3000/api/courses/${courseId}`)
+    const res = await axios.get(`http://47.99.85.173:3000/api/courses/${courseId}`)
     if (res.data.success) { course.value = res.data.data }
   } catch (error) {
     router.push('/dashboard')
@@ -379,7 +379,7 @@ onMounted(async () => {
   }
 
   try {
-    const chapRes = await axios.get(`http://localhost:3000/api/courses/${courseId}/chapters`)
+    const chapRes = await axios.get(`http://47.99.85.173:3000/api/courses/${courseId}/chapters`)
     if (chapRes.data.success && chapRes.data.data.length > 0) {
       chapterList.value = chapRes.data.data
       currentChapter.value = chapterList.value[0] 
@@ -397,7 +397,7 @@ onMounted(async () => {
 
 const checkEnrollmentStatus = async (courseId) => {
   try {
-    const res = await axios.get('http://localhost:3000/api/enrollments/check', {
+    const res = await axios.get('http://47.99.85.173:3000/api/enrollments/check', {
       params: { student_id: currentUser.value.id, course_id: courseId }
     })
     if (res.data.success) { isEnrolled.value = res.data.isEnrolled }
@@ -407,7 +407,7 @@ const checkEnrollmentStatus = async (courseId) => {
 const handleEnroll = async () => {
   enrolling.value = true
   try {
-    const res = await axios.post('http://localhost:3000/api/enrollments', {
+    const res = await axios.post('http://47.99.85.173:3000/api/enrollments', {
       student_id: currentUser.value.id,
       course_id: course.value.id
     })
@@ -422,7 +422,7 @@ const handleEnroll = async () => {
 
 const fetchCourseComments = async () => {
   try {
-    const res = await axios.get(`http://localhost:3000/api/courses/${course.value.id}/comments`)
+    const res = await axios.get(`http://47.99.85.173:3000/api/courses/${course.value.id}/comments`)
     if (res.data.success) { courseComments.value = res.data.data }
   } catch (error) {}
 }
@@ -431,7 +431,7 @@ const submitCourseComment = async () => {
   if (!newCommentContent.value.trim()) return ElMessage.warning('请写下你的评价内容哦')
   submittingComment.value = true
   try {
-    const res = await axios.post(`http://localhost:3000/api/courses/${course.value.id}/comments`, {
+    const res = await axios.post(`http://47.99.85.173:3000/api/courses/${course.value.id}/comments`, {
       user_id: currentUser.value.id, content: newCommentContent.value, rating: newRating.value
     })
     if (res.data.success) {
@@ -442,7 +442,7 @@ const submitCourseComment = async () => {
 
 const fetchTimelineNotes = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/api/notes', { params: { user_id: currentUser.value.id, course_id: course.value.id } })
+    const res = await axios.get('http://47.99.85.173:3000/api/notes', { params: { user_id: currentUser.value.id, course_id: course.value.id } })
     if (res.data.success) { noteList.value = res.data.data }
   } catch (error) {}
 }
@@ -453,7 +453,7 @@ const saveTimelineNote = async () => {
   if (!isBilibiliVideo.value && videoPlayerRef.value) { currentSeconds = videoPlayerRef.value.currentTime }
   savingNote.value = true
   try {
-    const res = await axios.post('http://localhost:3000/api/notes', {
+    const res = await axios.post('http://47.99.85.173:3000/api/notes', {
       user_id: currentUser.value.id, course_id: course.value.id,
       content: newNoteContent.value, timestamp_secs: currentSeconds
     })
@@ -478,7 +478,7 @@ const submitAssignment = async () => {
   if (!assignmentContent.value.trim()) return ElMessage.warning('作业内容不能是一张白纸')
   submitting.value = true
   try {
-    const res = await axios.post('http://localhost:3000/api/assignments', {
+    const res = await axios.post('http://47.99.85.173:3000/api/assignments', {
       course_id: course.value.id, student_id: currentUser.value.id, content: assignmentContent.value
     })
     if (res.data.success) { dialogVisible.value = false; isSubmitted.value = true }

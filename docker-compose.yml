@@ -1,13 +1,28 @@
 version: '3.8'
 
 services:
+  # 🌟 新增：MySQL 数据库容器
+  db:
+    image: mysql:8.0
+    container_name: olp-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: wsw051021 # 这里必须和你 db.js 里的密码保持完全一致
+      MYSQL_DATABASE: learning_platform # 容器启动时会自动创建这个空数据库
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql # 数据持久化挂载
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: olp-backend
     ports:
-      - "8080:8080"
+      - "3000:3000" # 🌟 修复：与你 server.js 中的 3000 端口严格对齐
+    depends_on:
+      - db # 确保数据库先启动，后端再启动
     restart: always
 
   frontend:
@@ -15,11 +30,15 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # 直接在这里写死你的服务器公网 IP，Vite 打包时会自动读取
-        - VITE_API_URL=http://47.99.85.173:8080
+        # 🌟 修复：对齐后端的 3000 端口
+        - VITE_API_URL=http://47.99.85.173:3000
     container_name: olp-frontend
     ports:
       - "80:80"
     depends_on:
       - backend
     restart: always
+
+# 声明数据卷
+volumes:
+  db_data:
