@@ -1,5 +1,5 @@
 # ===== 第一阶段：构建打包 =====
-FROM node:20 AS builder
+FROM node:22-alpine
 
 WORKDIR /app
 
