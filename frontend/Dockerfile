@@ -4,8 +4,9 @@ FROM node:22-alpine
 WORKDIR /app
 
 # 缓存依赖
-COPY package*.json ./
-RUN npm ci
+COPY package.json ./
+RUN npm install --legacy-peer-deps
+
 
 # 复制代码
 COPY . .
